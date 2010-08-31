@@ -2,6 +2,11 @@
 Propagate
 =========
 
+A simple module to handle time propation.
+
+From a supplied config object and list of propagation tasks, calculate the time
+evolution of the specified system.
+
 """
 
 import pyprop

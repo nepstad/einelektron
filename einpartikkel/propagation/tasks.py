@@ -2,9 +2,16 @@
 PropagationTasks
 ================
 
-Defines standard tasks to be performed during propagation
+Defines standard tasks to be performed during propagation.
+
+A list of instantiated propagation tasks should be supplied to the Propagate
+class. 
+
+Custom propagation tasks should derive from the PropagationTask baseclass,
+defined here.
 
 """
+
 from __future__ import with_statement
 import os.path
 import time
@@ -14,6 +21,7 @@ import pyprop
 from pyprop import PrintOut
 from pyprop.logging import GetClassLogger
 from einelektron.utils import RegisterAll
+from einelektron.eigenvalues import eigenvalues
 
 
 def CreatePath(absFileName):
@@ -168,8 +176,8 @@ class ComputeAtomicInitialState(PropagationTasks):
 	def setupTask(self, prop):
 		"""Calculate bound state and set prop.psi equal specified one.
 		"""
-		E, V, angIdxList, lmIdxList = SetupRadialEigenstates(prop, potentialIndices=[0], mList=[0])
-		SetRadialEigenstate(prop.psi, V, angIdxList, self.QuantumNumbers)
+		E, V, angIdxList, lmIdxList = eigenvalues.SetupRadialEigenstates(prop, potentialIndices=[0], mList=[0])
+		eigenvalues.SetRadialEigenstate(prop.psi, V, angIdxList, self.QuantumNumbers)
 
 	def callback(self, prop):
 		pass

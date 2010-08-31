@@ -1,0 +1,40 @@
+EinPartikkel, a Pyprop package
+==============================
+
+This package contains modules for performing 3(2)-dimensional calculations with
+one-particle systems. Time stepping, eigenstate finder and final state analysis 
+functionality is provided.
+
+
+Getting started
+---------------
+
+1) Create symlink to Pyprop location
+
+	ln -s /path/to/pyprop pyprop
+	
+2) Compile all the EinPartikkel C++ libraries
+	
+	make
+	
+For examples of use of the EinPartikkel package, take a look in the example/ subfolder.
+	
+ 
+Package structure
+-----------------
+doc/                            Documentation
+example/                        A few simple examples (in progress)
+einpartikkel/                         
+	__init__.py
+	utils.py
+
+	analysis/                    Stuff related to analysis of wavefunction
+
+	core/                        Potentials and other core functionality
+
+	eigenvalues/                 Finding eigenpairs
+	
+	propagation/                 Time propagation
+		propagation.py               Control code for time propagation
+		tasks.py                     Common propagation tasks
+	

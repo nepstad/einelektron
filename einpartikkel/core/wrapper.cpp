@@ -148,7 +148,7 @@ struct CustomPotential_LaserLength_X_2_Wrapper: CustomPotential_LaserLength_X<2>
 
 
 // Module ======================================================================
-BOOST_PYTHON_MODULE(libpotential)
+void Export_wrapper()
 {
     class_< SphericalKineticEnergyEvaluator<2>, SphericalKineticEnergyEvaluator_2_Wrapper >("SphericalKineticEnergyEvaluator_2", init<  >())
         .def(init< const SphericalKineticEnergyEvaluator<2>& >())

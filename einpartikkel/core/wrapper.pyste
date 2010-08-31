@@ -1,0 +1,24 @@
+
+#CustomPotential = Template("CustomPotential_AngularKineticEnergy_Spherical", "spherical.cpp")
+#CustomPotential("2")
+
+CustomPotential = Template("SphericalKineticEnergyEvaluator", "spherical.cpp")
+CustomPotential("2")
+
+CustomPotential = Template("CustomPotential_LaserLength_Z", "sphericallength.cpp")
+CustomPotential("2")
+
+CustomPotential = Template("CustomPotential_LaserLength_X", "sphericallength.cpp")
+CustomPotential("2")
+
+#declare potential evaluator for cartesian-like potentials
+PotentialEvaluator = Template("DynamicPotentialEvaluator", "potential.cpp")
+
+PotentialEvaluator("KineticEnergyPotential<2> 2","KineticEnergyPotential_2")
+PotentialEvaluator("CoulombPotential<2> 2","CoulombPotential_2")
+PotentialEvaluator("SingleActiveElectronPotential<2> 2","SingleActiveElectronPotential_2")
+PotentialEvaluator("OverlapPotential<2> 2","OverlapPotential_2")
+PotentialEvaluator("ComplexAbsorbingPotential<2> 2","ComplexAbsorbingPotential_2")
+
+
+
