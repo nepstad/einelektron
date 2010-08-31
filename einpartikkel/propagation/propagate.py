@@ -10,7 +10,7 @@ evolution of the specified system.
 """
 
 import pyprop
-from pyprop.logging import GetClassLogger
+from pyprop.pyproplogging import GetClassLogger
 
 class Propagate:
 	"""

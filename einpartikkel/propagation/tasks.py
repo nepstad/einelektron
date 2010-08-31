@@ -19,9 +19,9 @@ import tables
 import pypar
 import pyprop
 from pyprop import PrintOut
-from pyprop.logging import GetClassLogger
-from einelektron.utils import RegisterAll
-from einelektron.eigenvalues import eigenvalues
+from pyprop.pyproplogging import GetClassLogger
+from ..utils import RegisterAll
+from ..eigenvalues import eigenvalues
 
 
 def CreatePath(absFileName):
@@ -163,7 +163,7 @@ class SaveWavefunction(PropagationTask):
 		prop.SaveWavefunctionHDF(self.OutputFileName, "/wavefunction")
 
 
-class ComputeAtomicInitialState(PropagationTasks):
+class ComputeAtomicInitialState(PropagationTask):
 	"""
 	Diagonalize problem hamiltonian to determine eigenstates, and then
 	set initial wavefunction to one of these eigenstates.

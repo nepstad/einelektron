@@ -1,4 +1,6 @@
-from ..utils import RegisterAll
+import pyprop
+
+from utils import RegisterAll
 
 @RegisterAll
 class HydrogenicQuantumNumbers(object):

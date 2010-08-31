@@ -3,7 +3,7 @@ EinPartikkel
 ============
 
 The EinPartikkel package provides fundamental functionality related to one-
-electron-type problems, such as potentials, analysis and eigenpair calculations.
+particle-type problems, such as potentials, analysis and eigenpair calculations.
 
 """
 import sys
@@ -18,4 +18,4 @@ sys.path.append(PypropLocation)
 #files. To be passed to Pyprop for resolving during loading of said files.
 from utils import ProjectNamespace
 
-__all__ = ["analysis", "core", "eigenvalues", "utils"]
+__all__ = ["analysis", "core", "eigenvalues", "utils", "quantumnumbers"]
