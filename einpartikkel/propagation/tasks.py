@@ -19,15 +19,22 @@ import tables
 import pypar
 import pyprop
 from pyprop import PrintOut
-from pyprop.pyproplogging import GetClassLogger
+from pyprop.pyproplogging import GetClassLogger, GetFunctionLogger
 from ..utils import RegisterAll
 from ..eigenvalues import eigenvalues
 
+import string
+
 
 def CreatePath(absFileName):
+	"""Create directories in abspath
+	
+	"""
+	logger = GetFunctionLogger()
 	if pyprop.ProcId == 0:
 		filePath = os.path.dirname(absFileName)
-		if not os.path.exists(filePath):
+		if not os.path.exists(filePath) and len(filePath) > 0:
+			logging.debug("Creating folder: %s" % filePath)
 			os.makedirs(filePath)
 	pypar.barrier()
 	
@@ -90,8 +97,8 @@ class ProgressReport(PropagationTask):
 		Store problem information collected during propagation
 		"""
 		if pyprop.ProcId == 0:
-			with tables.openFile(self.OutputFileName, "r+") as h5file:
-				for itemName, itemVal in self.ProgressItems:
+			with tables.openFile(self.OutputFileName, "a") as h5file:
+				for itemName, itemVal in self.ProgressItems.iteritems():
 					if itemName in h5file.root:
 						h5file.removeNode(h5file.root, nodeName, recursive=True)
 					h5file.createArray("/", itemName, itemVal)
