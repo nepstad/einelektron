@@ -23,8 +23,6 @@ from pyprop.pyproplogging import GetClassLogger, GetFunctionLogger
 from ..utils import RegisterAll
 from ..eigenvalues import eigenvalues
 
-import string
-
 
 def CreatePath(absFileName):
 	"""Create directories in abspath
@@ -34,7 +32,7 @@ def CreatePath(absFileName):
 	if pyprop.ProcId == 0:
 		filePath = os.path.dirname(absFileName)
 		if not os.path.exists(filePath) and len(filePath) > 0:
-			logging.debug("Creating folder: %s" % filePath)
+			logger.debug("Creating folder: %s" % filePath)
 			os.makedirs(filePath)
 	pypar.barrier()
 	
@@ -100,7 +98,7 @@ class ProgressReport(PropagationTask):
 			with tables.openFile(self.OutputFileName, "a") as h5file:
 				for itemName, itemVal in self.ProgressItems.iteritems():
 					if itemName in h5file.root:
-						h5file.removeNode(h5file.root, nodeName, recursive=True)
+						h5file.removeNode(h5file.root, itemName, recursive=True)
 					h5file.createArray("/", itemName, itemVal)
 
 

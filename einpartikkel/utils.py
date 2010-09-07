@@ -6,8 +6,6 @@ Misc utilities are put here for now.
 """
 
 import sys
-import logging
-import inspect
 import pyprop.core
 
 ProjectNamespace = []

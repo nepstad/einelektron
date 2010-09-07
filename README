@@ -15,6 +15,7 @@ Getting started
 	
 2) Compile all the EinPartikkel C++ libraries
 	
+	cd einpartikkel
 	make
 	
 For examples of use of the EinPartikkel package, take a look in the example/ subfolder.

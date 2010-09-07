@@ -15,11 +15,15 @@ UpdatePypropProjectNamespace(pyprop.ProjectNamespace)
 
 
 def RunPropagation():
+	"""Perform propagation defined by 'config.ini' file.
+
+	"""
+
 	#Load config
 	configFile = "config.ini"
 	conf = pyprop.Load(configFile)
 	
-	#Setup propagation tasks
+	#Setup propagation tasks. Initial state = ground state
 	qnum = quantumnumbers.HydrogenicQuantumNumbers(1,0,0)
 	tasks = [ComputeAtomicInitialState(qnum), ProgressReport(), DisplayGMRESError()]
 
@@ -41,5 +45,7 @@ def LaserFunctionSimpleLength(conf, t):
 	else:
 		curField = 0
 	return curField
+#Put laser function in pyprop project namespace so that config files are
+#loaded properly.
 pyprop.ProjectNamespace["LaserFunctionSimpleLength"] = LaserFunctionSimpleLength
 
