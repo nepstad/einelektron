@@ -1,10 +1,13 @@
+import pyprop
 from pyprop.core import LmIndex
 from numpy import dot, conj, where
+from ..eigenvalues.eigenvalues import SetupRadialEigenstates, SetupOverlapMatrix
+
 
 def CalculateBoundDistribution(psi, eigenValues, eigenVectors, lmIdxList, m, overlap, boundThreshold=0):
 	"""
 	Calculate norm**2 of projection onto all bound states. The given eigenvectors
-	are assumed to cover all different angular momenta, but only m=0 (i.e. no 
+	are assumed to cover all different angular momenta, but only for a given m (i.e. no 
 	m-dependence in the potential).
 
 	"""
@@ -39,3 +42,42 @@ def CalculateBoundDistribution(psi, eigenValues, eigenVectors, lmIdxList, m, ove
 		boundTotal += sum(abs(proj)**2)
 
 	return boundE, boundV, boundDistr, boundTotal
+
+
+class EigenstateAnalysis:
+	"""Perform analysis of a wavefunction in terms of eigenstates.
+	"""
+	
+	def __init__(self, conf):
+		self.Config = conf
+		self.BoundThreshold = 0.0
+		
+	def Setup(self):
+		#Setup pyprop problem
+		self.Problem = pyprop.Problem(self.Config)
+		self.Problem.SetupStep()
+		
+		#Calculate eigenstates
+		E, V, angIdx, lmIdx = SetupRadialEigenstates(self.Problem)
+		self.Eigenvalues = E
+		self.EigenVectors = V
+		self.AngularIndices = angIdx
+		self.LMIndices = lmIdx
+		
+		#Setup overlap matrix
+		self.Overlap =  SetupOverlapMatrix(self.Problem)
+		
+	
+	def CalculateBoundProbability(self, psi, m):
+		"""Calculate norm squared of bound part of psi
+		"""
+		dummy, dummy, dummy, boundTotal = \
+			CalculateBoundDistribution(psi, self.Eigenvalues, self.EigenVectors, \
+									self.LMIndices, m, self.Overlap, boundThreshold=self.BoundThreshold)
+			
+		return boundTotal
+	
+	
+	def CalculateEnergyDistribution(self, psi):
+		raise NotImplementedError("Not implemented yet!")
+	
