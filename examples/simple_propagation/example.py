@@ -5,7 +5,8 @@ import einpartikkel
 import pyprop
 
 from einpartikkel.propagation.propagate import Propagate
-from einpartikkel.propagation.tasks import ComputeAtomicInitialState, ProgressReport, DisplayGMRESError
+from einpartikkel.propagation.tasks import ComputeAtomicInitialState, ProgressReport, DisplayGMRESError, \
+		SaveWavefunction
 from einpartikkel import quantumnumbers
 
 import einpartikkel.core.indexiterators
@@ -25,10 +26,10 @@ def RunPropagation():
 	
 	#Setup propagation tasks. Initial state = ground state
 	qnum = quantumnumbers.HydrogenicQuantumNumbers(1,0,0)
-	tasks = [ComputeAtomicInitialState(qnum), ProgressReport(), DisplayGMRESError()]
+	tasks = [ComputeAtomicInitialState(qnum), ProgressReport(), DisplayGMRESError(), SaveWavefunction(False)]
 
 	#Setup propagation
-	prop = Propagate(conf, tasks, 50)
+	prop = Propagate(conf, tasks, 100)
 
 	#Run propagation
 	prop.run()

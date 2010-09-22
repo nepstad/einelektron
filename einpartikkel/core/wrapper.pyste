@@ -1,6 +1,6 @@
 
-#CustomPotential = Template("CustomPotential_AngularKineticEnergy_Spherical", "spherical.cpp")
-#CustomPotential("2")
+CustomPotential = Template("CustomPotential_AngularKineticEnergy_Spherical", "spherical.cpp")
+CustomPotential("2")
 
 CustomPotential = Template("SphericalKineticEnergyEvaluator", "spherical.cpp")
 CustomPotential("2")
@@ -20,5 +20,6 @@ PotentialEvaluator("SingleActiveElectronPotential<2> 2","SingleActiveElectronPot
 PotentialEvaluator("OverlapPotential<2> 2","OverlapPotential_2")
 PotentialEvaluator("ComplexAbsorbingPotential<2> 2","ComplexAbsorbingPotential_2")
 
-
-
+#this is used to get at GetPotentialValue from python
+CustomPotential = Template("ComplexAbsorbingPotential", "potential.cpp")
+CustomPotential("2", "ComplexAbsorbingPotential_custom_2")

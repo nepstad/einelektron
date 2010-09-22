@@ -81,6 +81,7 @@ class ProgressReport(PropagationTask):
 
 	def callback(self, prop):
 		t = prop.PropagatedTime
+		T = prop.Duration + prop.StartTime
 		norm = prop.psi.GetNorm()
 		corr = abs(prop.psi.InnerProduct(self.InitialPsi))**2
 		eta = self.__EstimateETA(prop)
@@ -88,7 +89,7 @@ class ProgressReport(PropagationTask):
 		self.ProgressItems["Norm"] += [norm]
 		self.ProgressItems["InitialCorrelation"] += [corr]
 		FormatDuration = lambda t: time.strftime("%Hh %Mm %Ss", time.gmtime(t))
-		PrintOut("t = %.2f / %.2f; N = %.15f; Corr = %.12f, ETA = %s" % (t, prop.Duration, norm, corr, FormatDuration(eta)))
+		PrintOut("t = %.2f / %.2f; N = %.15f; Corr = %.12f, ETA = %s" % (t, T, norm, corr, FormatDuration(eta)))
 
 	def postProcess(self, prop):
 		"""
@@ -107,7 +108,8 @@ class ProgressReport(PropagationTask):
 		Estimates remaining time before propagation is finished
 		"""
 		curTime = time.time() - self.StartTime
-		totalTime = (curTime / prop.PropagatedTime) * prop.Duration
+		#totalTime = (curTime / prop.PropagatedTime) * prop.Duration
+		totalTime = (curTime / (prop.PropagatedTime - prop.StartTime)) * prop.Duration
 		eta = totalTime - curTime
 		return eta
 

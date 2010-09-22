@@ -51,6 +51,7 @@ class EigenstateAnalysis:
 	def __init__(self, conf):
 		self.Config = conf
 		self.BoundThreshold = 0.0
+		self.m = 0
 		
 	def Setup(self):
 		#Setup pyprop problem
@@ -68,12 +69,12 @@ class EigenstateAnalysis:
 		self.Overlap =  SetupOverlapMatrix(self.Problem)
 		
 	
-	def CalculateBoundProbability(self, psi, m):
+	def CalculateBoundProbability(self, psi):
 		"""Calculate norm squared of bound part of psi
 		"""
 		dummy, dummy, dummy, boundTotal = \
 			CalculateBoundDistribution(psi, self.Eigenvalues, self.EigenVectors, \
-									self.LMIndices, m, self.Overlap, boundThreshold=self.BoundThreshold)
+									self.LMIndices, self.m, self.Overlap, boundThreshold=self.BoundThreshold)
 			
 		return boundTotal
 	

@@ -29,7 +29,8 @@ class Propagate:
 		#setup Pyprop problem from config
 		self.Problem = pyprop.Problem(self.Config)
 		self.Problem.SetupStep()
-
+		
+	def preprocess(self):
 		#run pre-propagation step for all tasks
 		for task in self.PropagationTasks:
 			task.setupTask(self.Problem)

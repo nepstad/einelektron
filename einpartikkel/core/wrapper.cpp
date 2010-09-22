@@ -14,6 +14,49 @@ using namespace boost::python;
 // Declarations ================================================================
 namespace  {
 
+struct CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper: CustomPotential_AngularKineticEnergy_Spherical<2>
+{
+    CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper(PyObject* py_self_, const CustomPotential_AngularKineticEnergy_Spherical<2>& p0):
+        CustomPotential_AngularKineticEnergy_Spherical<2>(p0), py_self(py_self_) {}
+
+    CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper(PyObject* py_self_):
+        CustomPotential_AngularKineticEnergy_Spherical<2>(), py_self(py_self_) {}
+
+    void ApplyConfigSection(const ConfigSection& p0) {
+        call_method< void >(py_self, "ApplyConfigSection", p0);
+    }
+
+    void default_ApplyConfigSection(const ConfigSection& p0) {
+        CustomPotential_AngularKineticEnergy_Spherical<2>::ApplyConfigSection(p0);
+    }
+
+    void UpdatePotentialData(blitz::Array<std::complex<double>,2> p0, boost::shared_ptr<Wavefunction<2> > p1, std::complex<double> p2, double p3) {
+        call_method< void >(py_self, "UpdatePotentialData", p0, p1, p2, p3);
+    }
+
+    void default_UpdatePotentialData(blitz::Array<std::complex<double>,2> p0, boost::shared_ptr<Wavefunction<2> > p1, std::complex<double> p2, double p3) {
+        CustomPotential_AngularKineticEnergy_Spherical<2>::UpdatePotentialData(p0, p1, p2, p3);
+    }
+
+    void SetBasisPairs(int p0, const blitz::Array<int,2>& p1) {
+        call_method< void >(py_self, "SetBasisPairs", p0, p1);
+    }
+
+    void default_SetBasisPairs(int p0, const blitz::Array<int,2>& p1) {
+        CustomPotentialSphericalBase<2>::SetBasisPairs(p0, p1);
+    }
+
+    blitz::Array<int,2> GetBasisPairList(int p0) {
+        return call_method< blitz::Array<int,2> >(py_self, "GetBasisPairList", p0);
+    }
+
+    blitz::Array<int,2> default_GetBasisPairList(int p0) {
+        return CustomPotentialSphericalBase<2>::GetBasisPairList(p0);
+    }
+
+    PyObject* py_self;
+};
+
 struct SphericalKineticEnergyEvaluator_2_Wrapper: SphericalKineticEnergyEvaluator<2>
 {
     SphericalKineticEnergyEvaluator_2_Wrapper(PyObject* py_self_, const SphericalKineticEnergyEvaluator<2>& p0):
@@ -150,6 +193,15 @@ struct CustomPotential_LaserLength_X_2_Wrapper: CustomPotential_LaserLength_X<2>
 // Module ======================================================================
 void Export_wrapper()
 {
+    class_< CustomPotential_AngularKineticEnergy_Spherical<2>, CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper >("CustomPotential_AngularKineticEnergy_Spherical_2", init<  >())
+        .def(init< const CustomPotential_AngularKineticEnergy_Spherical<2>& >())
+        .def_readwrite("Mass", &CustomPotential_AngularKineticEnergy_Spherical<2>::Mass)
+        .def("ApplyConfigSection", (void (CustomPotential_AngularKineticEnergy_Spherical<2>::*)(const ConfigSection&) )&CustomPotential_AngularKineticEnergy_Spherical<2>::ApplyConfigSection, (void (CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::*)(const ConfigSection&))&CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::default_ApplyConfigSection)
+        .def("UpdatePotentialData", (void (CustomPotential_AngularKineticEnergy_Spherical<2>::*)(blitz::Array<std::complex<double>,2>, boost::shared_ptr<Wavefunction<2> >, std::complex<double>, double) )&CustomPotential_AngularKineticEnergy_Spherical<2>::UpdatePotentialData, (void (CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::*)(blitz::Array<std::complex<double>,2>, boost::shared_ptr<Wavefunction<2> >, std::complex<double>, double))&CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::default_UpdatePotentialData)
+        .def("SetBasisPairs", (void (CustomPotentialSphericalBase<2>::*)(int, const blitz::Array<int,2>&) )&CustomPotentialSphericalBase<2>::SetBasisPairs, (void (CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::*)(int, const blitz::Array<int,2>&))&CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::default_SetBasisPairs)
+        .def("GetBasisPairList", (blitz::Array<int,2> (CustomPotentialSphericalBase<2>::*)(int) )&CustomPotentialSphericalBase<2>::GetBasisPairList, (blitz::Array<int,2> (CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::*)(int))&CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper::default_GetBasisPairList)
+    ;
+
     class_< SphericalKineticEnergyEvaluator<2>, SphericalKineticEnergyEvaluator_2_Wrapper >("SphericalKineticEnergyEvaluator_2", init<  >())
         .def(init< const SphericalKineticEnergyEvaluator<2>& >())
         .def_readwrite("Mass", &SphericalKineticEnergyEvaluator<2>::Mass)
@@ -234,6 +286,23 @@ void Export_wrapper()
         .def("GetPotential", &DynamicPotentialEvaluator<ComplexAbsorbingPotential<2>,2>::GetPotential)
         .def("UpdatePotentialData", &DynamicPotentialEvaluator<ComplexAbsorbingPotential<2>,2>::UpdatePotentialData)
         .def("CalculateExpectationValue", &DynamicPotentialEvaluator<ComplexAbsorbingPotential<2>,2>::CalculateExpectationValue)
+    ;
+
+    class_< ComplexAbsorbingPotential<2> >("ComplexAbsorbingPotential_custom_2", init<  >())
+        .def(init< const ComplexAbsorbingPotential<2>& >())
+        .def_readwrite("TimeStep", &ComplexAbsorbingPotential<2>::TimeStep)
+        .def_readwrite("CurTime", &ComplexAbsorbingPotential<2>::CurTime)
+        .def_readwrite("radialRank", &ComplexAbsorbingPotential<2>::radialRank)
+        .def_readwrite("scalingReal", &ComplexAbsorbingPotential<2>::scalingReal)
+        .def_readwrite("scalingImag", &ComplexAbsorbingPotential<2>::scalingImag)
+        .def_readwrite("factorReal", &ComplexAbsorbingPotential<2>::factorReal)
+        .def_readwrite("factorImag", &ComplexAbsorbingPotential<2>::factorImag)
+        .def_readwrite("absorberStart", &ComplexAbsorbingPotential<2>::absorberStart)
+        .def_readwrite("absorberLength", &ComplexAbsorbingPotential<2>::absorberLength)
+        .def("ApplyConfigSection", &ComplexAbsorbingPotential<2>::ApplyConfigSection)
+        .def("GetPotentialValue", &ComplexAbsorbingPotential<2>::GetPotentialValue)
+        .def("CurTimeUpdated", &PotentialBase<2>::CurTimeUpdated)
+        .def("IsTimeDependent", &PotentialBase<2>::IsTimeDependent)
     ;
 
 }
