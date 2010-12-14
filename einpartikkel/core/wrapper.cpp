@@ -7,6 +7,7 @@
 #include <potential.cpp>
 #include <spherical.cpp>
 #include <sphericallength.cpp>
+#include <sphericalvelocity.cpp>
 
 // Using =======================================================================
 using namespace boost::python;
@@ -186,6 +187,60 @@ struct CustomPotential_LaserLength_X_2_Wrapper: CustomPotential_LaserLength_X<2>
     PyObject* py_self;
 };
 
+struct CustomPotential_LaserVelocity_2_Wrapper: CustomPotential_LaserVelocity<2>
+{
+    CustomPotential_LaserVelocity_2_Wrapper(PyObject* py_self_, const CustomPotential_LaserVelocity<2>& p0):
+        CustomPotential_LaserVelocity<2>(p0), py_self(py_self_) {}
+
+    CustomPotential_LaserVelocity_2_Wrapper(PyObject* py_self_):
+        CustomPotential_LaserVelocity<2>(), py_self(py_self_) {}
+
+    void SetBasisPairs(int p0, const blitz::Array<int,2>& p1) {
+        call_method< void >(py_self, "SetBasisPairs", p0, p1);
+    }
+
+    void default_SetBasisPairs(int p0, const blitz::Array<int,2>& p1) {
+        CustomPotential_LaserVelocity<2>::SetBasisPairs(p0, p1);
+    }
+
+    void UpdatePotentialData(blitz::Array<std::complex<double>,2> p0, boost::shared_ptr<Wavefunction<2> > p1, std::complex<double> p2, double p3) {
+        call_method< void >(py_self, "UpdatePotentialData", p0, p1, p2, p3);
+    }
+
+    void default_UpdatePotentialData(blitz::Array<std::complex<double>,2> p0, boost::shared_ptr<Wavefunction<2> > p1, std::complex<double> p2, double p3) {
+        CustomPotential_LaserVelocity<2>::UpdatePotentialData(p0, p1, p2, p3);
+    }
+
+    PyObject* py_self;
+};
+
+struct CustomPotential_LaserVelocityDerivativeR_2_Wrapper: CustomPotential_LaserVelocityDerivativeR<2>
+{
+    CustomPotential_LaserVelocityDerivativeR_2_Wrapper(PyObject* py_self_, const CustomPotential_LaserVelocityDerivativeR<2>& p0):
+        CustomPotential_LaserVelocityDerivativeR<2>(p0), py_self(py_self_) {}
+
+    CustomPotential_LaserVelocityDerivativeR_2_Wrapper(PyObject* py_self_):
+        CustomPotential_LaserVelocityDerivativeR<2>(), py_self(py_self_) {}
+
+    void SetBasisPairs(int p0, const blitz::Array<int,2>& p1) {
+        call_method< void >(py_self, "SetBasisPairs", p0, p1);
+    }
+
+    void default_SetBasisPairs(int p0, const blitz::Array<int,2>& p1) {
+        CustomPotential_LaserVelocityDerivativeR<2>::SetBasisPairs(p0, p1);
+    }
+
+    void UpdatePotentialData(blitz::Array<std::complex<double>,2> p0, boost::shared_ptr<Wavefunction<2> > p1, std::complex<double> p2, double p3) {
+        call_method< void >(py_self, "UpdatePotentialData", p0, p1, p2, p3);
+    }
+
+    void default_UpdatePotentialData(blitz::Array<std::complex<double>,2> p0, boost::shared_ptr<Wavefunction<2> > p1, std::complex<double> p2, double p3) {
+        CustomPotential_LaserVelocityDerivativeR<2>::UpdatePotentialData(p0, p1, p2, p3);
+    }
+
+    PyObject* py_self;
+};
+
 
 }// namespace 
 
@@ -231,6 +286,22 @@ void Export_wrapper()
         .def("GetBasisPairList", (blitz::Array<int,2> (CustomPotentialSphericalBase<2>::*)(int) )&CustomPotentialSphericalBase<2>::GetBasisPairList, (blitz::Array<int,2> (CustomPotential_LaserLength_X_2_Wrapper::*)(int))&CustomPotential_LaserLength_X_2_Wrapper::default_GetBasisPairList)
         .def("Coefficient", &CustomPotential_LaserLength_X<2>::Coefficient)
         .staticmethod("Coefficient")
+    ;
+
+    class_< CustomPotential_LaserVelocity<2>, CustomPotential_LaserVelocity_2_Wrapper >("CustomPotential_LaserVelocity_2", init<  >())
+        .def(init< const CustomPotential_LaserVelocity<2>& >())
+        .def("SetBasisPairs", &CustomPotential_LaserVelocity<2>::SetBasisPairs, &CustomPotential_LaserVelocity_2_Wrapper::default_SetBasisPairs)
+        .def("UpdatePotentialData", &CustomPotential_LaserVelocity<2>::UpdatePotentialData, &CustomPotential_LaserVelocity_2_Wrapper::default_UpdatePotentialData)
+        .def("ApplyConfigSection", &CustomPotential_LaserVelocity<2>::ApplyConfigSection)
+        .def("GetBasisPairList", &CustomPotential_LaserVelocity<2>::GetBasisPairList)
+    ;
+
+    class_< CustomPotential_LaserVelocityDerivativeR<2>, CustomPotential_LaserVelocityDerivativeR_2_Wrapper >("CustomPotential_LaserVelocityDerivativeR_2", init<  >())
+        .def(init< const CustomPotential_LaserVelocityDerivativeR<2>& >())
+        .def("SetBasisPairs", &CustomPotential_LaserVelocityDerivativeR<2>::SetBasisPairs, &CustomPotential_LaserVelocityDerivativeR_2_Wrapper::default_SetBasisPairs)
+        .def("UpdatePotentialData", &CustomPotential_LaserVelocityDerivativeR<2>::UpdatePotentialData, &CustomPotential_LaserVelocityDerivativeR_2_Wrapper::default_UpdatePotentialData)
+        .def("ApplyConfigSection", &CustomPotential_LaserVelocityDerivativeR<2>::ApplyConfigSection)
+        .def("GetBasisPairList", &CustomPotential_LaserVelocityDerivativeR<2>::GetBasisPairList)
     ;
 
     class_< DynamicPotentialEvaluator<KineticEnergyPotential<2>,2> >("KineticEnergyPotential_2", init<  >())

@@ -25,11 +25,12 @@ def RunPropagation():
 	conf = pyprop.Load(configFile)
 	
 	#Setup propagation tasks. Initial state = ground state
-	qnum = quantumnumbers.HydrogenicQuantumNumbers(1,0,0)
+	qnum = quantumnumbers.HydrogenicQuantumNumbers(2,1,0)
 	tasks = [ComputeAtomicInitialState(qnum), ProgressReport(), DisplayGMRESError(), SaveWavefunction(False)]
 
 	#Setup propagation
 	prop = Propagate(conf, tasks, 100)
+	prop.preprocess()
 
 	#Run propagation
 	prop.run()
