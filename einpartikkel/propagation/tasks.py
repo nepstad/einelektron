@@ -97,7 +97,7 @@ class ProgressReport(PropagationTask):
 		"""
 		Store problem information collected during propagation
 		"""
-		if self.StoreDuringPropagation and (pyprop.ProcId == 0):
+		if self.StoreProgressInfo and (pyprop.ProcId == 0):
 			with tables.openFile(self.OutputFileName, "a") as h5file:
 				for itemName, itemVal in self.ProgressItems.iteritems():
 					if itemName in h5file.root:
