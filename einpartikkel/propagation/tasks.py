@@ -59,7 +59,8 @@ class ProgressReport(PropagationTask):
 	in a HDF5-file when finished (time, norm and projection on initial state)
 	"""
 
-	def __init__(self):
+	def __init__(self, storeProgressInfo=True):
+		self.StoreProgressInfo = storeProgressInfo
 		self.Logger = GetClassLogger(self)
 		self.StartTime = -1
 		self.InitialPsi = None
@@ -69,10 +70,11 @@ class ProgressReport(PropagationTask):
 		self.Logger.info("Setting up task...")
 		self.StartTime = time.time()
 		self.InitialPsi = prop.psi.Copy()
-		self.OutputFileName = prop.Config.Names.output_file_name
 	
 		#check if output dir exist, create if not
-		CreatePath(self.OutputFileName)
+		if self.StoreProgressInfo:
+			self.OutputFileName = prop.Config.Names.output_file_name
+			CreatePath(self.OutputFileName)
 		
 		#Report items
 		self.ProgressItems["SampleTimes"] = []
@@ -95,7 +97,7 @@ class ProgressReport(PropagationTask):
 		"""
 		Store problem information collected during propagation
 		"""
-		if pyprop.ProcId == 0:
+		if self.StoreDuringPropagation and (pyprop.ProcId == 0):
 			with tables.openFile(self.OutputFileName, "a") as h5file:
 				for itemName, itemVal in self.ProgressItems.iteritems():
 					if itemName in h5file.root:
