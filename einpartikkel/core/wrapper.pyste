@@ -14,7 +14,20 @@ CustomPotential("2")
 CustomPotential = Template("CustomPotential_LaserVelocity", "sphericalvelocity.cpp")
 CustomPotential("2")
 
+CustomPotential = Template("CustomPotential_LaserVelocity_X", "sphericalvelocity_x.cpp")
+CustomPotential("2")
+
+CustomPotential = Template("CustomPotential_LaserVelocity_Y", "sphericalvelocity_y.cpp")
+CustomPotential("2")
+
 CustomPotential = Template("CustomPotential_LaserVelocityDerivativeR", "sphericalvelocity.cpp")
+CustomPotential("2")
+
+
+CustomPotential = Template("CustomPotential_LaserVelocityDerivativeR_Y", "sphericalvelocity_y.cpp")
+CustomPotential("2")
+
+CustomPotential = Template("CustomPotential_LaserVelocityDerivativeR_X", "sphericalvelocity_x.cpp")
 CustomPotential("2")
 
 #declare potential evaluator for cartesian-like potentials
