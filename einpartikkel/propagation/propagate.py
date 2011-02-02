@@ -29,6 +29,8 @@ class Propagate:
 		#setup Pyprop problem from config
 		self.Problem = pyprop.Problem(self.Config)
 		self.Problem.SetupStep()
+
+		self.PreProcessed = False
 		
 	def preprocess(self):
 		#run pre-propagation step for all tasks
@@ -39,12 +41,14 @@ class Propagate:
 		tmpPsi = self.Problem.psi.Copy()
 		en = self.GetEnergyExpectationValue(self.Problem.psi, tmpPsi).real
 		self.Logger.info("Initial state energy = %s" % en)
-			
+
+		self.PreProcessed = True
 
 	def run(self):
 		"""
 		Propagate problem until end time.
 		"""
+		assert (self.PreProcessed)
 		for t in self.Problem.Advance(self.NumberOfCallbacks):
 			for task in self.PropagationTasks:
 				task.callback(self.Problem)

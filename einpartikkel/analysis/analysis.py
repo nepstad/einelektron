@@ -270,4 +270,3 @@ class EigenstateAnalysis:
 
 	return E, theta, abs(angularDistrProj)**2
 
-
