@@ -183,7 +183,7 @@ class ComputeAtomicInitialState(PropagationTask):
 	def setupTask(self, prop):
 		"""Calculate bound state and set prop.psi equal specified one.
 		"""
-		E, V, angIdxList, lmIdxList = eigenvalues.SetupRadialEigenstates(prop, potentialIndices=[0], mList=[0])
+		E, V, angIdxList, lmIdxList = eigenvalues.SetupRadialEigenstates(prop, potentialIndices=[0], mList=[self.QuantumNumbers.m])
 		eigenvalues.SetRadialEigenstate(prop.psi, V, angIdxList, self.QuantumNumbers)
 
 	def callback(self, prop):
