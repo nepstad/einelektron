@@ -10,10 +10,10 @@ Basic eigenstate operations are provided. These are:
 
 """
 from __future__ import with_statement
+import os, errno
 import tables
 from numpy import array, where
 import pyprop
-import os.path
 #import ..
 from ..eigenvalues.eigenvalues import SetupRadialEigenstates
 
@@ -47,17 +47,29 @@ class Eigenstates(object):
 	    #Saving states.
 	    self.SaveEigenstates(E, V, angIdx, lmIdx)
 	    
-	    #Load eigenstates et al.
+	    #Load eigenstates et al:
 	    self.LoadEigenstates()
 
     
     def GetEigenstate(self, quantumNumber):
-	raise NotImplementedError("Not implemented yet!")
+		raise NotImplementedError("Not implemented yet!")
     
     def SaveEigenstates(self, eigenValues, eigenVectors, angIdxList, lmIdxList):
 	"""
 
 	"""
+	#Check that folder(s) exists, make them if not
+	filePath = os.path.dirname(self.Filename)
+	if not os.path.exists(filePath):
+		os.makedirs(filePath)
+		try:
+			os.makedirs(filePath)
+		except OSError as exc: # Python >2.5
+			if exc.errno == errno.EEXIST:
+				pass
+			else:
+				raise
+
 	f = tables.openFile(self.FileName, "w")
 	try:
 	    #Saving the lists of indices and results.

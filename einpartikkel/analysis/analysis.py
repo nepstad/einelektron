@@ -1,9 +1,10 @@
 import pyprop
 import scipy
 from pyprop.core import LmIndex
-from numpy import *
+from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array
+from numpy import maximum, sum
 from ..eigenvalues.eigenvalues import SetupRadialEigenstates, SetupOverlapMatrix
-from temp_eigenstates import *
+import eigenstates
 from scipy.special import gamma, sph_harm
 from scipy.interpolate import UnivariateSpline
 
@@ -62,7 +63,7 @@ class EigenstateAnalysis:
 	self.Problem.SetupStep()
 	
 	#Setup eigenstates/values.
-	self.Eigenstate = Eigenstates(self.Config)
+	self.Eigenstate = eigenstates.Eigenstates(self.Config)
 	
 	#Setup overlap matrix.
 	self.Overlap =  SetupOverlapMatrix(self.Problem)
@@ -107,8 +108,7 @@ class EigenstateAnalysis:
 	-------
 	boundTotal : double, the probability of being in a bound state.
 	"""
-	dummy_0, dummy_1, dummy_2, boundTotal = self.CalculateBoundDistribution(
-		psi)
+	_, _, _, boundTotal = self.CalculateBoundDistribution(psi)
 		
 	return boundTotal
     
