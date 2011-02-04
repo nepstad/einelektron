@@ -10,26 +10,27 @@ from scipy.interpolate import UnivariateSpline
 
 
 
-def GetLegendrePoly(lmax, theta):
+def GetLegendrePoly(lmIndices, theta, phi):
     """
-    leg = GetLegendrePoly(lmax, theta)
+    leg = GetLegendrePoly(lmIndices, theta)
 
-    Calculates the Legendre polinomials for l up to lmax, and the angles in theta.
+    Calculates the Legendre polinomials for all {l,m}, and the angles in theta.
 
     Parametres
     ----------
-    lmax : integer, the maximum l value in our basis.
-    theta : 1D double array, conaining the theta grid.
+    lmIndices : list of lm-index objects in basis.
+    theta : 1D double array, containing the theta grid.
+    phi : 1D double array, containing the phi grid.
 
     Returns
     -------
-    leg : 2D double array, containing legendre polinomials evaluated for different l, m and thetas.
+    leg : 3D double array, containing legendre polinomials evaluated for different l, m and thetas.
     """
-    leg = []
-    m = 0
-    for l in range(lmax+1):
-	leg.append(sph_harm(m, l, 0, theta))
-    return array(leg)
+    leg = zeros([len(lmIndices), len(theta), len(phi)])
+    for i, lm in enumerate(lmIndices):
+	for j, my_theta in enumerate(theta):
+	    leg[i,j,:] = sph_harm(lm.m, lm.l, phi, my_theta)
+    return leg
 
 
 def GetCoulombPhase(l, eta):
@@ -80,7 +81,7 @@ class EigenstateAnalysis:
 	boundV = []
 	boundTotal = 0
 	
-	for angIdx, curE, curV, my_l, m in self.Eigenstate.IterateBoundStates(self.BoundThreshold):
+	for angIdx, curE, curV, l, m in self.Eigenstate.IterateBoundStates(self.BoundThreshold):
 	    #Get projection on eigenstates
 	    psiSlice = psi.GetData()[angIdx, :]
 	    overlapPsi = dot(self.Overlap, psiSlice)
@@ -143,7 +144,7 @@ class EigenstateAnalysis:
 
 	#Loops over {l,m}, and corresponding eigenvalues/eigenvectors.
 	
-	for angIdx, curE, curV, my_l, m in self.Eigenstate.IterateStates(self.BoundThreshold):
+	for angIdx, curE, curV, l, m in self.Eigenstate.IterateStates(self.BoundThreshold):
 	    #Get projection on eigenstates.
 	    # | < V | S Psi > |**2
 	    psiSlice = psi.GetData()[angIdx, :]
@@ -176,7 +177,7 @@ class EigenstateAnalysis:
 
     def CalculateAngularDistribution(self, psi):
 	"""
-	E, theta, angularDistribution = CalculateAngularDistribution(self, psi)
+	theta, E, phi, angularDistribution = CalculateAngularDistribution(self, psi)
 
 	Calculates the angular distribution.
 
@@ -186,16 +187,14 @@ class EigenstateAnalysis:
 
 	Returns
 	-------
-	E : 1D double array, containing the energy grid.
 	theta : 1D double array, containing the theta grid.
+	E : 1D double array, containing the energy grid.
+	phi : 1D double array, containing the phi grid.
 	angularDistribution : 2D double array, containing the differentiated angular distribution.
 	"""
-	raise Exception("Not fully implemented")
-	#TODO: Do I need specially prepared eigenfunctions? 
-	#No, seems to be done in eigenvalues. :)
 
 	#Energy grid.
-	dE = maximum(min(diff(self.EigenValues[0])), 0.1)
+	dE = maximum(min(diff(self.Eigenstate.EigenValues[0])), 0.1)
 	minE = dE
 	#TODO: Insert intelligent value here.
 	maxE = 14 #self.EigenValues[0][-1] #self.EigenValues[0][3*len(self.EigenValues[0])/4]
@@ -205,28 +204,25 @@ class EigenstateAnalysis:
 	
 	#Charge.
 	Z = 1
-
-	lmax = self.Config.AngularRepresentation.index_iterator.lmax
 	
 	#Angular grid.
 	thetaCount = 100
 	theta = linspace(0, pi, thetaCount)
+	phiCount = 200
+	phi = linspace(0, 2 * pi, phiCount)
 	
 	#Legendre polynomial values.
-	leg = GetLegendrePoly(lmax, theta)
+	leg = GetLegendrePoly(self.Eigenstate.LMIndices, theta, phi)
 	
 	#Initialising the angular distribution array.
-	angularDistrProj = zeros((thetaCount, len(E)), dtype=complex)
+	angularDistrProj = zeros((thetaCount, len(E), phiCount), dtype=complex)
 	    
 	#Loops over ls, and corresponding eigenvalues/eigenvectors.
 	#   curE is a 1D array,
-	#   curV is a 2D array.
-	for l, (curE, curV) in enumerate(zip(self.EigenValues, self.EigenVectors)):
-	    #Selecting eigenvalues in the energy interval.
-	    idx = where(curE>=0)[0]
-	    idx = idx[where(curE[idx]<=maxE)[0]]
-	    
-	    curE = curE[idx]
+	#   curV is a 2D array.	
+	
+	#Loops over {l,m}, and corresponding eigenvalues/eigenvectors.
+	for angIdx, curE, curV, l, m in self.Eigenstate.IterateStates(self.BoundThreshold):
 	    #From energy to momentum (k).
 	    curk = sqrt(curE/2)
 
@@ -235,9 +231,9 @@ class EigenstateAnalysis:
 	    phase = (-1.j)**l * exp(1.j * sigma)
 
 	    #Get projection on eigenstates
-	    psiSlice = psi.GetData()[l, :]
+	    psiSlice = psi.GetData()[angIdx, :]
 	    overlapPsi = dot(self.Overlap, psiSlice)
-	    proj = dot(conj(curV[:,idx].transpose()), overlapPsi)
+	    proj = dot(conj(curV.transpose()), overlapPsi)
 
 	    #Calculate density of states
 	    #interiorSpacing = list((diff(curE[:-1]) + diff(curE[1:])) / 2.)
@@ -249,16 +245,19 @@ class EigenstateAnalysis:
 	    density = 1.0 / sqrt(spacing)
 	    
 	    #The multiplying factors (except for the legendre pol.) of the distribution term. 
-	    partialProj = phase * proj * density 
+	    partialProj = phase * proj[:,0] * density 
 		
 	    #Interpolate (in complex polar coordinates) to get equispaced dP/dE.
 	    r = abs(partialProj)**2
 	    i = arctan2(imag(partialProj), real(partialProj))
 	    argr = cos(i)
 	    argi = sin(i)
-	    interpR = UnivariateSpline(curE, r, s=0)(E)
-	    interpArgR = UnivariateSpline(curE, argr, s=0)(E)
-	    interpArgI = UnivariateSpline(curE, argi, s=0)(E)
+	    
+	    for ind in range(len(curE)):
+		interpR    = UnivariateSpline(curE, r   , s=0)(E)
+		interpArgR = UnivariateSpline(curE, argr, s=0)(E)
+		interpArgI = UnivariateSpline(curE, argi, s=0)(E)
+
 	    interpPhase = (interpArgR + 1.j*interpArgI) / sqrt(interpArgR**2 + interpArgI**2)
 	    interpProj = sqrt(maximum(interpR, 0)) * interpPhase
 	    
@@ -266,7 +265,7 @@ class EigenstateAnalysis:
 	    print sum(abs(interpProj)**2) * dE, sum(abs(partialProj/density)**2)
 	    
 	    #Including the legendre pol., and adding the term to the complete distribution.
-	    angularDistrProj += outer(leg[l,:], interpProj)
-
-	return E, theta, abs(angularDistrProj)**2
+	    for ind in range(phiCount):
+		angularDistrProj[:,:,ind] += outer(leg[angIdx,:,ind], interpProj)
+	return theta, E, phi, abs(angularDistrProj)**2
 

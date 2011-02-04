@@ -5,7 +5,8 @@ eigenstates
 
 Basic eigenstate operations are provided. These are:
 
-	1)Load/store eigenstates from disk
+	1)Load/store eigenstates from/to disk.
+	2)Iterate over bound/continuum states.
 
 
 """
@@ -22,6 +23,8 @@ from ..eigenvalues.eigenvalues import SetupRadialEigenstates
 class Eigenstates(object):
     def __init__(self, conf):
 	"""
+	Constructor method. Based on a config object, the eigenstates and eigenvalues
+	are calculated and saved. 
 	"""
 	#Config object.
 	self.Config = conf
@@ -52,10 +55,25 @@ class Eigenstates(object):
 
     
     def GetEigenstate(self, quantumNumber):
+		"""
+		Yet to be implemented.
+		"""
 		raise NotImplementedError("Not implemented yet!")
     
     def SaveEigenstates(self, eigenValues, eigenVectors, angIdxList, lmIdxList):
 	"""
+	SaveEigenstates(self, eigenValues, eigenVectors, angIdxList, lmIdxList)
+
+	Saves eigenstates/values and corresponding lists of indices and quantum numbers.
+	The format is meant o be read by LoadEigenstates() in this class. The data is stored in 
+	a binary HDF5 format. The file name is an attribute of the class.
+
+	Parametres
+	----------
+	eigenValues : list of 1D arrays of eigenvalues.
+	eigenVectors : list of 2D arrays of eigenstates.
+	angIdxList : integer list, showing which angular indices have been included.
+	lmIdxList : list of {l,m} objects, showing wht quantum number each angular index corresponds to.
 
 	"""
 	#Check that folder(s) exists, make them if not
@@ -93,7 +111,9 @@ class Eigenstates(object):
 	
     def LoadEigenstates(self):
 	"""
+	LoadEigenstates()
 
+	Loads eigen-information that was saved by SaveEigenstates().
 	"""
 	f = tables.openFile(self.FileName, "r")
 	try:
@@ -113,8 +133,21 @@ class Eigenstates(object):
 
     def IterateStates(self, threshold):
 	"""
-
+	IterateStates(self, threshold)
+	
 	Iterate over all states with energies over threshold.
+
+	Parametres
+	----------
+	threshold : float, the energy over which you want to look at the eigenstats.
+
+	Example
+	-------
+	>>> conf = pyprop.Load("config.ini")
+	>>> threshold = ionisation_probability = 0
+	>>> my_eigenstates = Eigenstates(conf)
+	>>> for angIdx, E, V, l, m in my_eigenstates.IterateStates(threshold):
+	>>>	ionisation_probability += projection_method(my_wavefunction, V)	 
 	"""
 	for angIdx in self.AngularIndices:
 	    curE = array(self.EigenValues[angIdx])
@@ -130,8 +163,31 @@ class Eigenstates(object):
 
     def IterateBoundStates(self, threshold):
 	"""
+	IterateBoundStates(threshold)
 
-	Iterate over all states with energies below threshold.
+	Iterate over all states with energies below threshold.	
+	
+	Parametres
+	----------
+	threshold : float, the energy UNDER which you want to look at the eigenstats.
+
+	Example
+	-------
+	>>> conf = pyprop.Load("config.ini")
+	>>> threshold = 0
+	>>> my_eigenstates = Eigenstates(conf)
+	>>> for angIdx, E, V, l, m in my_eigenstates.IterateStates(threshold):
+	>>>	print angIdx, l, m
+	 
+	    0 0 0
+	    1 1 -1
+	    2 1 0
+	    3 1 1
+	    4 2 -2
+	    . . .
+	    . . .
+	    . . .
+
 	"""
 	for angIdx in self.AngularIndices:
 	    curE = array(self.EigenValues[angIdx])
@@ -181,11 +237,16 @@ class Eigenstates(object):
 
 
 
-#@RegisterAll
 def GetRadialPostfix(conf):
     """
+    GetRadialPostfix(conf)
+
     Returns a "unique" list of strings string identifying the radial grid
     implied by the specified args
+    
+    Parametres
+    ----------
+    conf : config object.
     """
     cfg = conf.RadialRepresentation
 
@@ -202,11 +263,16 @@ def GetRadialPostfix(conf):
     return postfix
 
 
-#@RegisterAll
 def GetAngularPostfix(conf):
     """
+    GetAngularPostfix(conf)
+
     Returns a "unique" list of strings string identifying the angular grid
     implied by the specified args
+    
+    Parametres
+    ----------
+    conf : config object.
     """
     postfix = ["angular"]
     postfix += ["lmax%i" % conf.AngularRepresentation.index_iterator.lmax]
