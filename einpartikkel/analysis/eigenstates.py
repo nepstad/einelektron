@@ -59,7 +59,7 @@ class Eigenstates(object):
 
 	"""
 	#Check that folder(s) exists, make them if not
-	filePath = os.path.dirname(self.Filename)
+	filePath = os.path.dirname(self.FileName)
 	if not os.path.exists(filePath):
 		os.makedirs(filePath)
 		try:
