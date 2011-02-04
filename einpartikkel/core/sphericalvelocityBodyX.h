@@ -102,13 +102,13 @@ public:
 
 
 
-		I3_1 -= dlta_m * E_lm * temp;  
-		J2 -= dlta_m * E_lm * temp;
+		I3_1 += dlta_m * E_lm * temp;  
+		J2 = dlta_m * E_lm * temp;
 
 		
 		coupling += (-I1_1 - I2_1 + I3_1);
 		
-		//cout << l << "\t"  << m << "\t" << lp << "\t"  << mp << "\t" << I1_1 << "\t" << I2_1 << "\t" << I3_1 << "\t" << coupling << "\t Js:" << J1 << "\t" << J2 << endl;
+		//cout << l << "\t"  << m << "\t" << lp << "\t"  << mp << "\t" << I1_1 << "\t" << I2_1 << "\t" << I3_1 << "\t" << coupling << "\t Js:" << J1 << "\t" << J2 << "    test " << LegendreNorm(l+1,m+dlta_m) * K_lm * K2_term2 * M_PI * LegendreNorm(lp,mp) * (dlta1 + dlta2)  << endl;
 
 		return coupling;
 	}
@@ -122,7 +122,7 @@ public:
 		if (std::abs(m)<=l && l>=0)
 		{
 			double norm;
-			norm = std::pow(-1.,.5 * (m - std::abs(m))) * sqrt((2. * l + 1.) / (4. * M_PI));
+			norm = std::pow(-1.,.5 * (m + std::abs(m))) * sqrt((2. * l + 1.) / (4. * M_PI));
 			norm *= std::sqrt(exp(gsl_sf_lnfact(l - std::abs(m)) - gsl_sf_lnfact(l + std::abs(m))));
 			return norm;
 		}
@@ -241,7 +241,7 @@ public:
 			{
 				if (((c1 < 0) && (c2 < 0)) || ((c1 > 0) && (c2 > 0)))
 				{
-					return -2.0 * exp(gsl_sf_lnfact(nu+mu) - gsl_sf_lnfact(nu-mu));
+					return 2.0 * exp(gsl_sf_lnfact(nu+mu) - gsl_sf_lnfact(nu-mu));
 				}
 				else
 				{
