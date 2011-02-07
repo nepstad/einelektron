@@ -1,8 +1,8 @@
 import pyprop
 import scipy
 from pyprop.core import LmIndex
-from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array
-from numpy import maximum, sum
+from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array, linspace, pi
+from numpy import maximum, sum, arctan2, imag, real, outer, sqrt, cos, sin, exp
 from ..eigenvalues.eigenvalues import SetupRadialEigenstates, SetupOverlapMatrix
 import eigenstates
 from scipy.special import gamma, sph_harm
@@ -197,7 +197,7 @@ class EigenstateAnalysis:
 	dE = maximum(min(diff(self.Eigenstate.EigenValues[0])), 0.1)
 	minE = dE
 	#TODO: Insert intelligent value here.
-	maxE = 14 #self.EigenValues[0][-1] #self.EigenValues[0][3*len(self.EigenValues[0])/4]
+	maxE = 5 #self.EigenValues[0][-1] #self.EigenValues[0][3*len(self.EigenValues[0])/4]
 	E = r_[minE:maxE:dE]
 	#Initialise energy distribution list.
 	energyDistr = []
