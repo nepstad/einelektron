@@ -49,7 +49,8 @@ class CoulombWaves(object):
 
 		#Generate file name.
 		self.FolderName = "CoulombWaves" #TODO: this should be generated somehow
-		self.FileName = self.NameGen()
+		self.FileName = CoulombWaveNameGenerator(self.Config, self.FolderName,\
+				self.Z)
 
 		self._SetupComplete = False
 	
@@ -57,6 +58,7 @@ class CoulombWaves(object):
 	def SetData(self, data):
 		self._Data = data
 		self._SetupComplete = True
+
 
 	@classmethod
 	def FromFile(cls, filename):
@@ -182,29 +184,29 @@ class CoulombWaves(object):
 			yield angIdx, filteredE, filteredCW, l, m
 
 
-	def NameGen(self):
-		"""
-		fileName = NameGen(self, conf)
+def CoulombWaveNameGenerator(conf, folderName, Z):
+	"""
+	fileName = CoulombWaveNameGenerator(conf, folderName)
 
-		Returns an generated file name.
+	Returns a generated file name.
 
-		Returns
-		-------
-		fileName : (string) generated file name.
+	Returns
+	-------
+	fileName : (string) generated file name.
 
-		"""
+	"""
 
-		#Coulomb wave characteristics
-		radialPostfix = "_".join(GetRadialPostfix(self.Config))
-		angularPostfix = "_".join(GetAngularPostfix(self.Config))
-		chargePostfix = "Z%s" % self.Z
-		
-		filename = self.FolderName + "/" 
-		filename += "_".join([radialPostfix, angularPostfix, \
-			chargePostfix])
-		filename += ".h5"
-		
-		return filename
+	#Coulomb wave characteristics
+	radialPostfix = "_".join(GetRadialPostfix(conf))
+	angularPostfix = "_".join(GetAngularPostfix(conf))
+	chargePostfix = "Z%s" % Z
+	
+	filename = folderName + "/" 
+	filename += "_".join([radialPostfix, angularPostfix, \
+		chargePostfix])
+	filename += ".h5"
+	
+	return filename
 
 
 #---------------------------------------------------------------------------------------
@@ -253,6 +255,7 @@ def SetupRadialCoulombStatesEnergyNormalized(psi, Z, Emax, dE):
 
 	"""
 
+	logger = pyprop.GetFunctionLogger()
 	E = r_[dE:Emax:dE]
 	k = sqrt(E*2)
 	
@@ -260,7 +263,14 @@ def SetupRadialCoulombStatesEnergyNormalized(psi, Z, Emax, dE):
 	l = array(psi.GetRepresentation().GetGlobalGrid(0), dtype=int)
 	
 	#Setup Radial Waves
-	coulWaves = map(lambda curL: array(map(lambda curK: sqrt(2*dE/pi/curK)*GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline), k)).transpose(), l)
+	def calculateForL(curL):
+		logger.info("Generating Coulomb waves for Z = %s, l = %s..." % (Z, curL))
+		result = \
+			array(map(lambda curK: sqrt(2*dE/pi/curK)*GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline), k))
+		return result.transpose()
+
+	#coulWaves = map(lambda curL: array(map(lambda curK: sqrt(2*dE/pi/curK)*GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline), k)).transpose(), l)
+	coulWaves = map(calculateForL, l)
 	energies = [E]*len(l)
 
 	return energies, coulWaves
@@ -277,8 +287,6 @@ def GetRadialCoulombWave(Z, l, k, rmax=100):
 
 
 def GetRadialCoulombWaveBSplines(Z, l, k, bsplineObj):
-	print "Z = %s, l = %s, k = %s" % (Z, l, k)
-	sys.stdout.flush()
 	#Get the Coulomb function in grid space
 	r = bsplineObj.GetQuadratureGridGlobal()
 	wav = zeros(len(r), dtype=double)
