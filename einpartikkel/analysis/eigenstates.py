@@ -230,7 +230,7 @@ class Eigenstates(object):
 	angularPostfix = "_".join(GetAngularPostfix(conf))
 	
 	my_name += conf.Propagation.grid_potential_list[2] + "_"
-	my_name += radialPostfix + angularPostfix
+	my_name += radialPostfix + angularPostfix + ".h5"
 	
 	return my_name
 

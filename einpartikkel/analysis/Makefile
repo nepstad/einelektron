@@ -1,4 +1,8 @@
-clean:
+PYPROP_ROOT  := ../../pyprop
+include $(PYPROP_ROOT)/Makefile.platform
 
-all:
-
+ifeq ($(PYPROP_STATIC),1)
+	include Makefile.static
+else
+	include Makefile.dynamic
+endif

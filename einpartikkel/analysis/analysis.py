@@ -5,6 +5,7 @@ from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array
 from numpy import maximum, sum
 from ..eigenvalues.eigenvalues import SetupRadialEigenstates, SetupOverlapMatrix
 import eigenstates
+import coulombwaves
 from scipy.special import gamma, sph_harm
 from scipy.interpolate import UnivariateSpline
 
@@ -115,7 +116,7 @@ class EigenstateAnalysis:
     
     
 
-    def CalculateEnergyDistribution(self, psi):
+    def CalculateEnergyDistribution(self, psi, minE, maxE, dE):
 	"""
 	E, energyDistr = CalculateEnergyDistribution(self, psi)
 
@@ -131,9 +132,9 @@ class EigenstateAnalysis:
 	energyDistr : double 1D array, the energy distribution on E.
 	"""
 	#Defines energy grid.
-	dE = min(diff(sorted(self.Eigenstate.EigenValues[0])))
-	minE = 0
-	maxE = self.Eigenstate.EigenValues[0][3*len(self.Eigenstate.EigenValues[0])/4]
+	#dE = min(diff(sorted(self.Eigenstate.EigenValues[0])))
+	#minE = 0
+	#maxE = self.Eigenstate.EigenValues[0][3*len(self.Eigenstate.EigenValues[0])/4]
 	E = r_[minE:maxE:dE]
 	
 	#Initialise energy distribution array.
@@ -268,4 +269,26 @@ class EigenstateAnalysis:
 	    for ind in range(phiCount):
 		angularDistrProj[:,:,ind] += outer(leg[angIdx,:,ind], interpProj)
 	return theta, E, phi, abs(angularDistrProj)**2
+
+	
+class CoulombwaveAnalysis(EigenstateAnalysis):
+    """
+    Perform analysis of a wavefunction in terms of Coulomb waves.
+    """
+    
+    def __init__(self, conf):
+		self.Config = conf
+		self.BoundThreshold = 0.0
+		self.m = 0
+	    
+    def Setup(self):
+		#Setup pyprop problem.
+		self.Problem = pyprop.Problem(self.Config)
+		self.Problem.SetupStep()
+		
+		#Setup eigenstates/values.
+		self.Eigenstate = coulombwaves.CoulombWaves.FromFile("CoulombWaves/grid_exponentiallinear_xmax100_xsize20_order7_xpartition8_gamma2.5_angular_lmax5_Z-1.h5")
+		
+		#Setup overlap matrix.
+		self.Overlap =  SetupOverlapMatrix(self.Problem)
 
