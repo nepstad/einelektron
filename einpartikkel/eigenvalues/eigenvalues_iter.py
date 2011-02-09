@@ -27,7 +27,7 @@ import pyprop
 from pyprop import GetFunctionLogger
 from pyprop.serialization import RemoveExistingDataset
 from einpartikkel.utils import RegisterAll 
-from einpartikkel.namegenerator import GetRadialPostfix, GetAngularPostfix
+from einpartikkel.namegenerator import GetRadialPostfix
 
 @RegisterAll
 def FindEigenvaluesInverseIterationsPiram(conf):
@@ -83,16 +83,21 @@ def SaveEigenvalueSolverShiftInvert(solver, shiftInvertSolver):
 	logger = GetFunctionLogger()
 
 	conf = solver.BaseProblem.Config
-	shift = conf.Arpack.shift
+	shift = conf.Eigenvalues.shift
+	angularRank = 0
 
 	#Get angular momentum and z-projection
-	l = conf.AngularRepresentation.index_iterator.l
-	m = conf.AngularRepresentation.index_iterator.m
-	assert len(l) == 1
-	assert len(m) == 1
+	#l = conf.AngularRepresentation.index_iterator.l
+	#m = conf.AngularRepresentation.index_iterator.m
+	psi = solver.BaseProblem.psi
+	angRange = \
+		psi.GetRepresentation().GetRepresentation(angularRank).Range
+	assert angRange.GetGrid().size == 1
+	l = angRange.GetLmIndex(0).l
+	m = angRange.GetLmIndex(0).m
 
 	#generate filename
-	filename = NameGeneratorBoundstates(conf, l[0], m[0])
+	filename = NameGeneratorBoundstates(conf, l, m)
 
 	#Get eigenvalue error estimates
 	errorEstimatesPIRAM = solver.Solver.GetErrorEstimates()
@@ -115,7 +120,7 @@ def SaveEigenvalueSolverShiftInvert(solver, shiftInvertSolver):
 	logger.info("Now storing eigenvectors...")
 	for i in range(len(E)):
 		solver.SetEigenvector(prop.psi, i)
-		prop.SaveWavefunctionHDF(filename, NameGeneratorEigenvectorDatasetPath(i))
+		prop.SaveWavefunctionHDF(filename, GetEigenvectorDatasetPath(i))
 
 	if pyprop.ProcId == 0:
 		eigGroupName = GetEigenvectorGroupName()
@@ -170,7 +175,6 @@ def NameGeneratorBoundstates(conf, l, m):
 	
 	#Grid characteristics
 	radialPostfix = "_".join(GetRadialPostfix(conf))
-	angularPostfix = "_".join(GetAngularPostfix(conf))
 	
 	filename = "%s/" % folderName
 	filename += radialPostfix + "_l%i_m%i" % (l,m) + ".h5"
