@@ -15,12 +15,11 @@ import os, errno
 import tables
 from numpy import array, where
 import pyprop
-#import ..
 from ..eigenvalues.eigenvalues import SetupRadialEigenstates
-from einpartikkel.namegerator import GetRadialPostfix, GetAngularPostfix
+from einpartikkel.namegenerator import GetRadialPostfix, GetAngularPostfix
+from einpartikkel.utils import RegisterAll
 
-#WTF is this?  
-#@RegisterAll
+@RegisterAll
 class Eigenstates(object):
     def __init__(self, conf):
 	"""
