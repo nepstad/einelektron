@@ -131,7 +131,6 @@ class EigenstateAnalysis:
 
 		return boundTotal
     
-    
 
 	def CalculateEnergyDistribution(self, psi, minE, maxE, dE):
 		"""

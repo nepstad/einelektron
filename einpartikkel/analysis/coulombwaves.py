@@ -7,7 +7,7 @@ Basic Coulomb wave operations are provided. These are:
 	1) construct Coulomb waves
 	2) store to disk
 	3) load from disk
-	4) nice representation of Coulomb waves
+	4) nice class representation of Coulomb waves
 
 """
 import sys
@@ -18,7 +18,7 @@ from numpy import array, where, r_, sqrt, zeros, array, abs, dot, conj, pi, \
 import pyprop
 from einpartikkel.eigenvalues.eigenvalues import SetupRadialEigenstates
 from einpartikkel.utils import RegisterAll
-from namegenerator import GetRadialPostfix, GetAngularPostfix
+from einpartikkel.namegenerator import GetRadialPostfix, GetAngularPostfix
 from above import SetRadialCoulombWave
 
 @RegisterAll
@@ -184,11 +184,17 @@ class CoulombWaves(object):
 			yield angIdx, filteredE, filteredCW, l, m
 
 
+@RegisterAll
 def CoulombWaveNameGenerator(conf, folderName, Z):
-	"""
-	fileName = CoulombWaveNameGenerator(conf, folderName)
+	"""fileName = CoulombWaveNameGenerator(conf, folderName)
 
 	Returns a generated file name.
+
+	Input
+	-----
+	conf: Pyprop config
+	folderName: (string) name of folder where Coulomb waves are stored
+	Z: (int) Coulomb charge
 
 	Returns
 	-------
@@ -212,37 +218,6 @@ def CoulombWaveNameGenerator(conf, folderName, Z):
 #---------------------------------------------------------------------------------------
 #            Coulomb Wave Analysis
 #---------------------------------------------------------------------------------------
-#def SetupRadialBesselStatesEnergyNormalized(prop, Z, Emax, dE):
-#	E = r_[dE:Emax:dE]
-#	k = sqrt(E*2)
-#
-#	psi = prop.psi
-#	bspline = psi.GetRepresentation().GetRepresentation(1).GetBSplineObject()
-#	l = array(psi.GetRepresentation().GetGlobalGrid(0), dtype=int)
-#
-#	
-#	#Setup Radial Waves
-#	S = SetupOverlapMatrix(prop)
-#	coulWaves = map(lambda curL: array(map(lambda curK: sqrt(2*dE/pi/curK)*GetRadialBesselWaveBSplines(Z, int(curL), curK, bspline, S), k)).transpose(), l)
-#	energies = [E]*len(l)
-#
-#	return energies, coulWaves
-#
-#
-#def SetupRadialCoulombStatesMomentumNormalized(psi, Z, kmax, dk):
-#	k = r_[dk:kmax:dk]
-#	E = k**2 / 2
-#
-#	bspline = psi.GetRepresentation().GetRepresentation(1).GetBSplineObject()
-#	l = array(psi.GetRepresentation().GetGlobalGrid(0), dtype=int)
-#	
-#	#Setup Radial Waves
-#	coulWaves = map(lambda curL: array(map(lambda curK: sqrt(2*dk/pi)*GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline), k)).transpose(), l)
-#	energies = [E]*len(l)
-#
-#	return energies, coulWaves
-
-
 def SetupRadialCoulombStatesEnergyNormalized(psi, Z, Emax, dE):
 	"""Calculate radial Coulomb states with energy normalization
 
@@ -269,24 +244,24 @@ def SetupRadialCoulombStatesEnergyNormalized(psi, Z, Emax, dE):
 			array(map(lambda curK: sqrt(2*dE/pi/curK)*GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline), k))
 		return result.transpose()
 
-	#coulWaves = map(lambda curL: array(map(lambda curK: sqrt(2*dE/pi/curK)*GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline), k)).transpose(), l)
 	coulWaves = map(calculateForL, l)
 	energies = [E]*len(l)
 
 	return energies, coulWaves
 
 
-def GetRadialCoulombWave(Z, l, k, rmax=100):
-	#Get the Coulomb function in grid space
-	dr = 0.01
-	r = r_[dr:rmax:dr]
-	wav = zeros(len(r), dtype=double)
-	SetRadialCoulombWave(Z, l, k, r, wav)
-
-	return r, wav	
-
-
 def GetRadialCoulombWaveBSplines(Z, l, k, bsplineObj):
+	"""Calculate radial Coulomb wave expanded in B-splines
+
+	Input
+	-----
+	Z: (int) Coulomb charge
+	l: (int) angular momentum
+	k: (double) Coulomb wave momentum
+	bsplineObj: BSpline instance
+
+	"""
+
 	#Get the Coulomb function in grid space
 	r = bsplineObj.GetQuadratureGridGlobal()
 	wav = zeros(len(r), dtype=double)
@@ -298,37 +273,4 @@ def GetRadialCoulombWaveBSplines(Z, l, k, bsplineObj):
 	bsplineObj.ExpandFunctionInBSplines(cplxWav, coeff)
 
 	return coeff
-
-def GetRadialBesselWaveBSplines(Z, l, k, bsplineObj, S):
-	besselFunc = lambda k, r: sin(k*r + Z/k * log(k*r) - l*pi/2 + GetCoulombPhase(l, Z / k))
-
-	#Get the Coulomb function in grid space
-	r = bsplineObj.GetQuadratureGridGlobal()
-	wav = array(besselFunc(k, r), dtype=complex)
-
-	#get bspline coeffs
-	coeff = zeros(bsplineObj.NumberOfBSplines, dtype=complex)
-	bsplineObj.ExpandFunctionInBSplines(wav, coeff)
-
-	return coeff
-
-
-def CalculateDpDk(Z, k, psi, S):
-	bspline = psi.GetRepresentation().GetRepresentation(1).GetBSplineObject()
-	l = array(psi.GetRepresentation().GetGlobalGrid(0), dtype=int)
-	
-	#Setup Radial Waves
-	coulWaves = map(lambda curL: map(lambda curK: GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline, S), k), l)
-
-	#calculate dpdk
-	dpdk = zeros(len(k), dtype=double)
-	for lIdx, (curL, wavList) in enumerate(zip(l, coulWaves)):
-		for kIdx, (curK, wav) in enumerate(zip(k, wavList)):
-			dpdk[kIdx] += abs(dot(conj(wav), dot(S, psi.GetData()[lIdx, :])))**2
-
-	return dpdk
-
-def GetCoulombPhase(l, eta):
-	sigma = gamma(l + 1 + eta * 1j)
-	return arctan2(sigma.imag, sigma.real)
 
