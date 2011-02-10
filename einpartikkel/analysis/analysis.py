@@ -118,7 +118,10 @@ class EigenstateAnalysis:
 
 		Parametres
 		----------
-		psi : PyProp wavefunction object. The wavefunction after propagation.
+		psi:  PyProp wavefunction object. The wavefunction after propagation.
+		minE: lower cutoff in energy spectrum
+		maxE: upper cutoff in energy spectrum
+		dE:   spacing of interpolated energies in spectrum
 
 		Returns
 		-------
@@ -166,6 +169,7 @@ class EigenstateAnalysis:
 		interpolateError = totalIon - totalIon2			#|
 
 		return E, energyDistr
+
 
 		def GetLegendrePoly(self, theta, phi):
 			"""
