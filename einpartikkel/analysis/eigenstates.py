@@ -44,8 +44,9 @@ class Eigenstates(object):
 	    #Retrieve lmax.
 	    lmax = conf.AngularRepresentation.index_iterator.lmax
 	    
+	    #Want the same angIdx and lmIdx, but want to calculate only for m=0 
 	    #Calculate eigenstates.
-	    E, V, angIdx, lmIdx = SetupRadialEigenstates(prop, mList = range(-lmax,lmax+1))
+	    E, V, angIdx, lmIdx = SetupRadialEigenstates(prop, mList = [0])
 	    
 	    #Saving states.
 	    self.SaveEigenstates(E, V, angIdx, lmIdx)
@@ -149,11 +150,11 @@ class Eigenstates(object):
 	>>> for angIdx, E, V, l, m in my_eigenstates.IterateStates(threshold):
 	>>>	ionisation_probability += projection_method(my_wavefunction, V)	 
 	"""
-	for angIdx in self.AngularIndices:
-	    curE = array(self.EigenValues[angIdx])
-	    curV = array(self.EigenVectors[angIdx])
-	    l = self.LMIndices[angIdx].l
-	    m = self.LMIndices[angIdx].m
+	for angIdx, lm in enumerate(self.Config.AngularRepresentation.index_iterator.__iter__()):
+	    l = lm.l
+	    m = lm.m
+	    curE = array(self.EigenValues[l])
+	    curV = array(self.EigenVectors[l])
 	    
 	    #Filter out unwanted energies.
 	    idx = where(curE > threshold)
@@ -189,11 +190,12 @@ class Eigenstates(object):
 	    . . .
 
 	"""
-	for angIdx in self.AngularIndices:
-	    curE = array(self.EigenValues[angIdx])
-	    curV = array(self.EigenVectors[angIdx])
-	    l = self.LMIndices[angIdx].l
-	    m = self.LMIndices[angIdx].m
+	for angIdx, lm in enumerate(self.Config.AngularRepresentation.index_iterator.__iter__()):
+	    l = lm.l
+	    m = lm.m
+	    curE = array(self.EigenValues[l])
+	    curV = array(self.EigenVectors[l])
+
 	    
 	    #Filter out unwanted energies.
 	    idx = where(curE < threshold)

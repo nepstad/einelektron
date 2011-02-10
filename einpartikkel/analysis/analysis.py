@@ -1,8 +1,8 @@
 import pyprop
 import scipy
 from pyprop.core import LmIndex
-from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array
-from numpy import maximum, sum
+from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array, linspace, pi
+from numpy import maximum, sum, arctan2, imag, real, outer, sqrt, cos, sin, exp
 from ..eigenvalues.eigenvalues import SetupRadialEigenstates, SetupOverlapMatrix
 import eigenstates
 import coulombwaves
@@ -10,28 +10,6 @@ from scipy.special import gamma, sph_harm
 from scipy.interpolate import UnivariateSpline
 
 
-
-def GetLegendrePoly(lmIndices, theta, phi):
-    """
-    leg = GetLegendrePoly(lmIndices, theta)
-
-    Calculates the Legendre polinomials for all {l,m}, and the angles in theta.
-
-    Parametres
-    ----------
-    lmIndices : list of lm-index objects in basis.
-    theta : 1D double array, containing the theta grid.
-    phi : 1D double array, containing the phi grid.
-
-    Returns
-    -------
-    leg : 3D double array, containing legendre polinomials evaluated for different l, m and thetas.
-    """
-    leg = zeros([len(lmIndices), len(theta), len(phi)])
-    for i, lm in enumerate(lmIndices):
-	for j, my_theta in enumerate(theta):
-	    leg[i,j,:] = sph_harm(lm.m, lm.l, phi, my_theta)
-    return leg
 
 
 def GetCoulombPhase(l, eta):
@@ -189,6 +167,32 @@ class EigenstateAnalysis:
 
 		return E, energyDistr
 
+		def GetLegendrePoly(self, theta, phi):
+			"""
+			leg = GetLegendrePoly(lmIndices, theta)
+
+			Calculates the Legendre polinomials for all {l,m}, and the angles in theta.
+
+			Parametres
+			----------
+			lmIndices : list of lm-index objects in basis.
+			theta : 1D double array, containing the theta grid.
+			phi : 1D double array, containing the phi grid.
+
+			Returns
+			-------
+			leg : 3D double array, containing legendre polinomials evaluated for different l, m and thetas.
+			"""
+			index_iterator = self.Config.AngularRepresentation.index_iterator
+
+			leg = zeros([(index_iterator.lmax+1)**2, len(theta), len(phi)], dtype=complex)
+			print "Legendre ..."
+			for i, lm in enumerate(index_iterator.__iter__()):
+				print i
+				for j, my_theta in enumerate(theta):
+					leg[i,j,:] = sph_harm(lm.m, lm.l, phi, my_theta)
+
+			return leg
 
 
 	def CalculateAngularDistribution(self, psi):
@@ -210,11 +214,6 @@ class EigenstateAnalysis:
 
 		"""
 
-		#Energy grid.
-		dE = maximum(min(diff(self.Eigenstate.EigenValues[0])), 0.1)
-		minE = dE
-		#TODO: Insert intelligent value here.
-		maxE = 14 #self.EigenValues[0][-1] #self.EigenValues[0][3*len(self.EigenValues[0])/4]
 		E = r_[minE:maxE:dE]
 		#Initialise energy distribution list.
 		energyDistr = []
@@ -229,7 +228,7 @@ class EigenstateAnalysis:
 		phi = linspace(0, 2 * pi, phiCount)
 		
 		#Legendre polynomial values.
-		leg = GetLegendrePoly(self.Eigenstate.LMIndices, theta, phi)
+		leg = self.GetLegendrePoly(theta, phi)
 		
 		#Initialising the angular distribution array.
 		angularDistrProj = zeros((thetaCount, len(E), phiCount), dtype=complex)
@@ -237,8 +236,9 @@ class EigenstateAnalysis:
 		#Loops over ls, and corresponding eigenvalues/eigenvectors.
 		#   curE is a 1D array,
 		#   curV is a 2D array.	
-		
 		#Loops over {l,m}, and corresponding eigenvalues/eigenvectors.
+		print "Projection ..."
+		
 		for angIdx, curE, curV, l, m in self.Eigenstate.IterateStates(self.BoundThreshold):
 			#From energy to momentum (k).
 			curk = sqrt(curE/2)
@@ -271,19 +271,19 @@ class EigenstateAnalysis:
 			argi = sin(i)
 			
 			for ind in range(len(curE)):
-				interpR    = UnivariateSpline(curE, r   , s=0)(E)
-				interpArgR = UnivariateSpline(curE, argr, s=0)(E)
-				interpArgI = UnivariateSpline(curE, argi, s=0)(E)
+				interpR    = UnivariateSpline(curE, r   , k=1, s=0)(E)
+				interpArgR = UnivariateSpline(curE, argr, k=1, s=0)(E)
+				interpArgI = UnivariateSpline(curE, argi, k=1, s=0)(E)
 
 				interpPhase = (interpArgR + 1.j*interpArgI) / sqrt(interpArgR**2 + interpArgI**2)
 				interpProj = sqrt(maximum(interpR, 0)) * interpPhase
 				
-				#Checking interpolation.
-				print sum(abs(interpProj)**2) * dE, sum(abs(partialProj/density)**2)
-				
-				#Including the legendre pol., and adding the term to the complete distribution.
-				for ind in range(phiCount):
-					angularDistrProj[:,:,ind] += outer(leg[angIdx,:,ind], interpProj)
+				print angIdx
+
+			#Including the legendre pol., and adding the term to the complete distribution.
+			for ind in range(phiCount):
+				angularDistrProj[:,:,ind] += outer(leg[angIdx,:,ind], interpProj)
+
 		return theta, E, phi, abs(angularDistrProj)**2
 
 	
