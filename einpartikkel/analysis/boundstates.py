@@ -30,6 +30,9 @@ class Boundstates(object):
 		self.States = []
 		self.Psi = None
 		self.Overlap = None
+		self.IsSetup = False
+
+		self.Logger = pyprop.GetClassLogger(self)
 
 	def Setup(self):
 		"""Load eigenstates from disk
@@ -50,13 +53,20 @@ class Boundstates(object):
 		#Setup overlap matrix
 		self.Overlap = SetupOverlapMatrix(self.Config.OverlapPotential, \
 				self.Psi)
+		
+		self.IsSetup = True
 
 	def RemoveProjection(self, psi):
 		"""Remove projection of psi onto all bound states
 
 		"""
+		assert self.IsSetup
+
 		angRange = psi.GetRepresentation().GetRepresentation(0).Range
 		for idx, (l,m) in enumerate(self.LmList):
+			if len(self.States) == 0:
+				continue
+			self.Logger.info("Removing projection on (l,m) = (%i,%i)" % (l,m))
 			angIdx = angRange.GetGridIndex(pyprop.core.LmIndex(l,m))
 			assert (angIdx > -1)
 			curV = self.States[idx]
