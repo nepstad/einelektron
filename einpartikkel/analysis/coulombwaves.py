@@ -50,7 +50,7 @@ class CoulombWaves(object):
 		#Generate file name.
 		self.FolderName = "CoulombWaves" #TODO: this should be generated somehow
 		self.FileName = CoulombWaveNameGenerator(self.Config, self.FolderName,\
-				self.Z)
+				self.Z, dE, Emax)
 
 		self._SetupComplete = False
 	
@@ -106,11 +106,12 @@ class CoulombWaves(object):
 		self.Psi = pyprop.CreateWavefunction(self.Config)
 		
 		#Calculate eigenstates
-		E, cw = SetupRadialCoulombStatesEnergyNormalized(self.Psi, self.Z, \
-			self.MaxEnergy, self.EnergyResolution)
+		for l in d["AngularMomenta"]:
+			E, cw = SetupRadialCoulombStatesEnergyNormalized(self.Psi, self.Z, \
+				l, self.MaxEnergy, self.EnergyResolution)
 
-		d["Energies"] = E
-		d["CoulombWaves"] = cw
+			d["Energies_l%i" % l] = E
+			d["CoulombWaves_l%i" % l] = cw
 
 		self._SetupComplete = True
     
@@ -180,12 +181,13 @@ class CoulombWaves(object):
 			#Filter out unwanted energies.
 			idx = where(curE > threshold)
 			filteredE = curE[idx]
-			filteredCW = curCW[:,idx]
+			#filteredCW = curCW[:,idx]
+			filteredCW = curCW[idx,:]
 			yield angIdx, filteredE, filteredCW, l, m
 
 
 @RegisterAll
-def CoulombWaveNameGenerator(conf, folderName, Z):
+def CoulombWaveNameGenerator(conf, folderName, Z, dE, Emax):
 	"""fileName = CoulombWaveNameGenerator(conf, folderName)
 
 	Returns a generated file name.
@@ -202,14 +204,20 @@ def CoulombWaveNameGenerator(conf, folderName, Z):
 
 	"""
 
+	def getAngularPostfix(conf):
+		lList = [it.l for it in conf.AngularRepresentation.index_iterator]
+		return ["l%s" % lList]
+
 	#Coulomb wave characteristics
 	radialPostfix = "_".join(GetRadialPostfix(conf))
-	angularPostfix = "_".join(GetAngularPostfix(conf))
+	#angularPostfix = "_".join(GetAngularPostfix(conf))
+	angularPostfix = "_".join(getAngularPostfix(conf))
 	chargePostfix = "Z%s" % Z
+	energyPostfix = "dE%s_Emax%s" % (dE, Emax)
 	
 	filename = folderName + "/" 
 	filename += "_".join([radialPostfix, angularPostfix, \
-		chargePostfix])
+		chargePostfix, energyPostfix])
 	filename += ".h5"
 	
 	return filename
@@ -218,15 +226,16 @@ def CoulombWaveNameGenerator(conf, folderName, Z):
 #---------------------------------------------------------------------------------------
 #            Coulomb Wave Analysis
 #---------------------------------------------------------------------------------------
-def SetupRadialCoulombStatesEnergyNormalized(psi, Z, Emax, dE):
+def SetupRadialCoulombStatesEnergyNormalized(psi, Z, l, Emax, dE):
 	"""Calculate radial Coulomb states with energy normalization
 
 	Input
 	-----
-	psi: (wavefunction) a wavefunction with the desired representation
-	Z: (int) the Coulomb charge
+	psi:  (wavefunction) a wavefunction with the desired representation
+	Z:    (int) the Coulomb charge
+	l:    (int) angular momentum
 	Emax: (double) desired max energy of Coulomb waves
-	dE: (double) energy resolution
+	dE:   (double) energy resolution
 
 	"""
 
@@ -235,17 +244,20 @@ def SetupRadialCoulombStatesEnergyNormalized(psi, Z, Emax, dE):
 	k = sqrt(E*2)
 	
 	bspline = psi.GetRepresentation().GetRepresentation(1).GetBSplineObject()
-	l = array(psi.GetRepresentation().GetGlobalGrid(0), dtype=int)
-	
-	#Setup Radial Waves
-	def calculateForL(curL):
-		logger.info("Generating Coulomb waves for Z = %s, l = %s..." % (Z, curL))
-		result = \
-			array(map(lambda curK: sqrt(2*dE/pi/curK)*GetRadialCoulombWaveBSplines(Z, int(curL), curK, bspline), k))
-		return result.transpose()
+	#l = array(psi.GetRepresentation().GetGlobalGrid(0), dtype=int)
 
-	coulWaves = map(calculateForL, l)
-	energies = [E]*len(l)
+	#Setup Radial Waves for given l
+	logger.info("Generating Coulomb waves for Z = %s, l = %s..." % (Z, l))
+	f = GetRadialCoulombWaveBSplines
+	def cwFunc(curK):
+		idx = curK[0]
+		k = curK[1]
+		factor = sqrt(2*dE/pi/k)
+		return f(Z, int(l), k, bspline)
+	result = array(map(cwFunc, enumerate(k)))
+
+	coulWaves = result.transpose()
+	energies = E
 
 	return energies, coulWaves
 
@@ -262,15 +274,28 @@ def GetRadialCoulombWaveBSplines(Z, l, k, bsplineObj):
 
 	"""
 
+	#Setup buffers for the calculation
+	def setupBuf():
+		r = bsplineObj.GetQuadratureGridGlobal()
+		wav = zeros(len(r), dtype=double)
+		coeff = zeros(bsplineObj.NumberOfBSplines, dtype=complex)
+		return r, wav, coeff
+	r, wavBuf, coeff = setupBuf()
+
 	#Get the Coulomb function in grid space
-	r = bsplineObj.GetQuadratureGridGlobal()
-	wav = zeros(len(r), dtype=double)
-	SetRadialCoulombWave(Z, l, k, r, wav)
-	cplxWav = array(wav, dtype=complex)
+	def setCoulombwave():
+		SetRadialCoulombWave(Z, l, k, r, wavBuf)
+	setCoulombwave()
+
+	#Copy coulomb waves to a complex buffer
+	def copyBuf():
+		cplxWav = array(wavBuf, dtype=complex)
+		return cplxWav
+	cplxWavBuf = copyBuf()
 
 	#get bspline coeffs
-	coeff = zeros(bsplineObj.NumberOfBSplines, dtype=complex)
-	bsplineObj.ExpandFunctionInBSplines(cplxWav, coeff)
+	def expandFunc():
+		bsplineObj.ExpandFunctionInBSplines(cplxWavBuf, coeff)
+	expandFunc()
 
 	return coeff
-
