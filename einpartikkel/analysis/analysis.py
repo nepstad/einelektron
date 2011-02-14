@@ -10,8 +10,6 @@ from scipy.special import gamma, sph_harm
 from scipy.interpolate import UnivariateSpline
 
 
-
-
 def GetCoulombPhase(l, eta):
     """
     coulombPhase = GetCoulombPhase(l, eta)
@@ -45,9 +43,7 @@ class EigenstateAnalysis:
 		#Setup eigenstates/values.
 		self.Eigenstate = eigenstates.Eigenstates(self.Config)
 		
-		#Setup overlap matrix.
-		self.Overlap =  SetupOverlapMatrix(self.Problem)
-	    
+
 	def CalculateBoundDistribution(self, psi):
 		"""
 		Calculate norm**2 of projection onto all bound states. The given eigenvectors
@@ -60,11 +56,13 @@ class EigenstateAnalysis:
 		boundV = []
 		boundTotal = 0
 		
+		#Multiply overlap on wavefunction
+		overlapPsi = self.MultiplyOverlap(psi)
+		
 		for angIdx, curE, curV, l, m in self.Eigenstate.IterateBoundStates(self.BoundThreshold):
 			#Get projection on eigenstates
-			psiSlice = psi.GetData()[angIdx, :]
-			overlapPsi = dot(self.Overlap, psiSlice)
-			proj = dot(conj(curV.transpose()), overlapPsi)
+			psiSlice = overlapPsi.GetData()[angIdx, :]
+			proj = dot(conj(curV.transpose()), psiSlice)
 
 			#Interpolate to get equispaced dP/dE
 			boundDistr.append( proj )
@@ -80,11 +78,13 @@ class EigenstateAnalysis:
 
 		"""
 
+		#Multiply overlap on wavefunction
+		overlapPsi = self.MultiplyOverlap(psi)
+
 		for angIdx, curE, curV, l, m in self.Eigenstate.IterateBoundStates(self.BoundThreshold):
 			#Get projection on eigenstates
-			psiSlice = psi.GetData()[angIdx, :]
-			overlapPsi = dot(self.Overlap, psiSlice)
-			proj = dot(conj(curV.transpose()), overlapPsi)
+			psiSlice = overlapPsi.GetData()[angIdx, :]
+			proj = dot(conj(curV.transpose()), psiSlice)
 			for p, v in zip(proj, curV.transpose()):
 				psi.GetData()[angIdx, :] -= p * v[0,:]
 
@@ -130,6 +130,11 @@ class EigenstateAnalysis:
 
 		"""
 
+		self.Logger("Now calculating dP/dE...")
+
+		#Multiply overlap on wavefunction
+		overlapPsi = self.MultiplyOverlap(psi)
+
 		#Create energy grid.
 		E = r_[minE:maxE:dE]
 		
@@ -144,9 +149,8 @@ class EigenstateAnalysis:
 		for angIdx, curE, curV, l, m in self.Eigenstate.IterateStates(self.BoundThreshold):
 			#Get projection on eigenstates.
 			# | < V | S Psi > |**2
-			psiSlice = psi.GetData()[angIdx, :]
-			overlapPsi = dot(self.Overlap, psiSlice)
-			proj = abs(dot(conj(curV.transpose()), overlapPsi))**2
+			psiSlice = overlapPsi.GetData()[angIdx, :]
+			proj = abs(dot(conj(curV.transpose()), psiSlice))**2
 			
 			#Add to total ionisation.
 			totalIon += sum(proj)
@@ -199,7 +203,7 @@ class EigenstateAnalysis:
 			return leg
 
 
-	def CalculateAngularDistribution(self, psi):
+	def CalculateAngularDistribution(self, psi, Z=1):
 		"""
 		theta, E, phi, angularDistribution = CalculateAngularDistribution(self, psi)
 
@@ -208,6 +212,7 @@ class EigenstateAnalysis:
 		Parametres
 		----------
 		psi : PyProp wavefunction object. The wavefunction after propagation.
+		Z:    (int) Coulomb wave charge
 
 		Returns
 		-------
@@ -218,12 +223,12 @@ class EigenstateAnalysis:
 
 		"""
 
+		#Multiply overlap on wavefunction
+		overlapPsi = self.MultiplyOverlap(psi)
+
 		E = r_[minE:maxE:dE]
 		#Initialise energy distribution list.
 		energyDistr = []
-		
-		#Charge.
-		Z = 1
 		
 		#Angular grid.
 		thetaCount = 100
@@ -252,9 +257,8 @@ class EigenstateAnalysis:
 			phase = (-1.j)**l * exp(1.j * sigma)
 
 			#Get projection on eigenstates
-			psiSlice = psi.GetData()[angIdx, :]
-			overlapPsi = dot(self.Overlap, psiSlice)
-			proj = dot(conj(curV.transpose()), overlapPsi)
+			psiSlice = overlapPsi.GetData()[angIdx, :]
+			proj = dot(conj(curV.transpose()), psiSlice)
 
 			#Calculate density of states
 			#interiorSpacing = list((diff(curE[:-1]) + diff(curE[1:])) / 2.)
@@ -290,29 +294,39 @@ class EigenstateAnalysis:
 
 		return theta, E, phi, abs(angularDistrProj)**2
 
-	
+
+	def MultiplyOverlap(self, inPsi):
+		"""Multiply overlap matrix on wavefunction, return new wavefunction
+
+		"""
+		#Get a copy of psi
+		outPsi = inPsi.Copy()
+
+		#Muliply overlap
+		outPsi.GetRepresentation().MultiplyOverlap(outPsi)
+
+		return outPsi
+
+
 class CoulombwaveAnalysis(EigenstateAnalysis):
     """
     Perform analysis of a wavefunction in terms of Coulomb waves.
     """
     
-    def __init__(self, conf, Z):
+    def __init__(self, conf, Z, fileList):
 		self.Config = conf
 		self.BoundThreshold = 0.0
 		self.m = 0
 		self.Z = Z
+		self.FileList = fileList
 	    
     def Setup(self):
-		#Setup pyprop problem.
-		self.Problem = pyprop.Problem(self.Config)
-		self.Problem.SetupStep()
+		#Setup Coulomb waves
+		#folderName = "CoulombWaves"
+		#fname = coulombwaves.CoulombWaveNameGenerator(self.Config, folderName,\
+		#		self.Z, dE, Emax)
+		self.Eigenstate = coulombwaves.CoulombWaves.FromMultipleFiles(self.FileList)
 		
-		#Setup eigenstates/values.
-		folderName = "CoulombWaves"
-		fname = coulombwaves.CoulombWaveNameGenerator(self.Config, folderName,\
-				self.Z)
-		self.Eigenstate = coulombwaves.CoulombWaves.FromFile(fname)
-		
-		#Setup overlap matrix.
-		self.Overlap =  SetupOverlapMatrix(self.Problem)
+		#Check that the Coulomb waves are compatible (TODO: more checks)
+		assert self.Eigenstate.Z == self.Z
 

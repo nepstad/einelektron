@@ -51,8 +51,8 @@ class Boundstates(object):
 		self.Psi = pyprop.CreateWavefunction(self.Config)
 
 		#Setup overlap matrix
-		self.Overlap = SetupOverlapMatrix(self.Config.OverlapPotential, \
-				self.Psi)
+		#self.Overlap = SetupOverlapMatrix(self.Config.OverlapPotential, \
+		#		self.Psi)
 		
 		self.IsSetup = True
 
@@ -61,6 +61,13 @@ class Boundstates(object):
 
 		"""
 		assert self.IsSetup
+
+		#Copy psi
+		psiTmp = psi.Copy()
+
+		#Multiply overlap
+		#radialRank = 1
+		psiTmp.GetRepresentation().MultiplyOverlap(psiTmp)
 
 		angRange = psi.GetRepresentation().GetRepresentation(0).Range
 		for idx, (l,m) in enumerate(self.LmList):
@@ -72,9 +79,11 @@ class Boundstates(object):
 			curV = self.States[idx]
 			if len(curV) == 0:
 				continue
-			psiSlice = psi.GetData()[angIdx, :]
-			overlapPsi = dot(self.Overlap, psiSlice)
-			proj = dot(conj(curV), overlapPsi)
+			#psiSlice = psi.GetData()[angIdx, :]
+			#overlapPsi = dot(self.Overlap, psiSlice)
+			#proj = dot(conj(curV), overlapPsi)
+			psiSlice = psiTmp.GetData()[angIdx, :]
+			proj = dot(conj(curV), psiSlice)
 			#print "l=%s, m=%s, p=%s" % (l,m, proj)
 			for p, v in zip(proj, curV):
 				psi.GetData()[angIdx, :] -= p * v[:]

@@ -14,7 +14,7 @@ import sys
 import os, errno
 import tables
 from numpy import array, where, r_, sqrt, zeros, array, abs, dot, conj, pi, \
-	double, complex
+	double, complex, iterable, diff
 import pyprop
 from einpartikkel.eigenvalues.eigenvalues import SetupRadialEigenstates
 from einpartikkel.utils import RegisterAll
@@ -52,6 +52,9 @@ class CoulombWaves(object):
 		self.FileName = CoulombWaveNameGenerator(self.Config, self.FolderName,\
 				self.Z, dE, Emax)
 
+		#Get logger handle
+		self.Logger = pyprop.GetClassLogger(self)
+
 		self._SetupComplete = False
 	
 
@@ -63,27 +66,49 @@ class CoulombWaves(object):
 	@classmethod
 	def FromFile(cls, filename):
 		"""Setup CoulombWaves object from serialized (file) data
+
+		Takes a filename as argument.
 		"""
+		if iterable(filename):
+			obj = cls.FromMultipleFiles(cls, filename)
+		else:
+			obj = cls.FromMultipleFiles(cls, [filename])
+
+		return obj
+
+
+	@classmethod
+	def FromMultipleFiles(cls, fileList):
+		"""Setup CoulombWaves object from serialized (file) data
+
+		Takes a list of file names as argument
+		"""
+		logger = pyprop.GetFunctionLogger()
+		logger.info("Setting up Coulomb waves from serialized data...")
+
 		d = {}
 		metaDataItems = {}
-		with tables.openFile(filename, "r") as f:
-			#Load data
-			dataItemNames = f.getNodeAttr("/", cls._DataItemAttrName)
-			for dataItem in dataItemNames:
-				d[dataItem] = f.getNode("/", dataItem)[:]
+		for filename in fileList:
+			with tables.openFile(filename, "r") as f:
+				#Load data
+				dataItemNames = f.getNodeAttr("/", cls._DataItemAttrName)
+				for dataItem in dataItemNames:
+					d[dataItem] = f.getNode("/", dataItem)[:]
 
-			#Load metadata
-			metaDataItemNames = f.getNodeAttr("/", cls._MetaDataItemAttrName)
-			for mdItem in metaDataItemNames:
-				metaDataItems[mdItem] = f.getNodeAttr("/", mdItem)
+				#Load metadata
+				metaDataItemNames = f.getNodeAttr("/", cls._MetaDataItemAttrName)
+				for mdItem in metaDataItemNames:
+					metaDataItems[mdItem] = f.getNodeAttr("/", mdItem)
+				
+			#Load config object.
+			config = pyprop.LoadConfigFromFile(filename, "/")
 			
-		#Load config object.
-		config = pyprop.LoadConfigFromFile(filename, "/")
-		
+
+		#Instantitate CoulombWave object and set data
 		obj = cls(config, **metaDataItems)
-		#obj._Data = d
-		#obj._SetupComplete = True
 		obj.SetData(d)
+		
+		logger.info("Loading complete.")
 
 		return obj
 
@@ -136,6 +161,7 @@ class CoulombWaves(object):
 				else:
 					raise
 
+		self.Logger.info("Now saving Coulomb waves to disk...")
 		with tables.openFile(self.FileName, "w") as f:
 			#Store Coulomb wave data
 			for dataItemName, dataItemValue in self._Data.iteritems():
@@ -152,6 +178,8 @@ class CoulombWaves(object):
 		#Saving config object.
 		pyprop.serialization.SaveConfigObject(self.FileName, "/", self.Config)
 
+		self.Logger.info("Save complete.")
+
 
 	def IterateStates(self, threshold):
 		"""
@@ -165,8 +193,8 @@ class CoulombWaves(object):
 
 		"""
 		assert (self._SetupComplete)
-		enList = self._Data["Energies"]
-		cwList = self._Data["CoulombWaves"]
+		#enList = self._Data["Energies"]
+		#cwList = self._Data["CoulombWaves"]
 		#for curL, (E, curCW) in enumerate(zip(enList, cwList)):
 		idxIt = self.Config.AngularRepresentation.index_iterator
 		for angIdx, lmIdx in enumerate(idxIt):
@@ -175,15 +203,26 @@ class CoulombWaves(object):
 			m = lmIdx.m
 			
 			#Get energies and Coulomb waves
-			curE = array(enList[l])
-			curCW = array(cwList[l])
+			curE = self._Data["Energies_l%i" % l]
+			curCW = self._Data["CoulombWaves_l%i" % l]
+			
+			#Get energies and Coulomb waves
+			#curE = array(enList[l])
+			#curCW = array(cwList[l])
 
 			#Filter out unwanted energies.
 			idx = where(curE > threshold)
 			filteredE = curE[idx]
-			#filteredCW = curCW[:,idx]
-			filteredCW = curCW[idx,:]
-			yield angIdx, filteredE, filteredCW, l, m
+			filteredCW = curCW[:,idx]
+			#filteredCW = curCW[idx,:]
+			
+			#Test:normalize
+			k = sqrt(2*filteredE)
+			dE = diff(filteredE)[0]
+			factor = sqrt(2*dE/(pi*k))
+
+
+			yield angIdx, filteredE, filteredCW * factor, l, m
 
 
 @RegisterAll
@@ -197,6 +236,8 @@ def CoulombWaveNameGenerator(conf, folderName, Z, dE, Emax):
 	conf: Pyprop config
 	folderName: (string) name of folder where Coulomb waves are stored
 	Z: (int) Coulomb charge
+	dE: (double) energy spacing of Coulomb waves
+	Emax: (double) highest Coulomb wave energy
 
 	Returns
 	-------
@@ -252,8 +293,9 @@ def SetupRadialCoulombStatesEnergyNormalized(psi, Z, l, Emax, dE):
 	def cwFunc(curK):
 		idx = curK[0]
 		k = curK[1]
-		factor = sqrt(2*dE/pi/k)
-		return f(Z, int(l), k, bspline)
+		#Normalization factor
+		factor = sqrt(2*dE/(pi*k))
+		return factor * f(Z, int(l), k, bspline)
 	result = array(map(cwFunc, enumerate(k)))
 
 	coulWaves = result.transpose()
@@ -299,3 +341,4 @@ def GetRadialCoulombWaveBSplines(Z, l, k, bsplineObj):
 	expandFunc()
 
 	return coeff
+
