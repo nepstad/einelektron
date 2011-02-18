@@ -236,7 +236,7 @@ class EigenstateAnalysis:
 	
 	for angIdx, curE, curV, l, m in self.Eigenstate.IterateStates(self.BoundThreshold):
 	    #From energy to momentum (k).
-	    curk = sqrt(curE/2)
+	    curk = sqrt(2.*curE)
 
 	    #Phase for outgoing waves
 	    sigma = array([GetCoulombPhase(l, -Z / k) for k in curk])
