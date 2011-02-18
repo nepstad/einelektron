@@ -1,1 +1,1 @@
-__all__ = ["eigenvalues"]
+__all__ = ["eigenvalues", "eigenvalues_iter"]

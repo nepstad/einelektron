@@ -90,8 +90,9 @@ class ProgressReport(PropagationTask):
 		self.ProgressItems["SampleTimes"] += [t]
 		self.ProgressItems["Norm"] += [norm]
 		self.ProgressItems["InitialCorrelation"] += [corr]
-		FormatDuration = lambda t: time.strftime("%Hh %Mm %Ss", time.gmtime(t))
-		PrintOut("t = %.2f / %.2f; N = %.15f; Corr = %.12f, ETA = %s" % (t, T, norm, corr, FormatDuration(eta)))
+		#FormatDuration = lambda t: time.strftime("%Hh %Mm %Ss", time.gmtime(t))
+		#FormatDuration = lambda t: time.strftime("%dd %Hh %Mm %Ss", time.gmtime(t))
+		PrintOut("t = %.2f / %.2f; N = %.15f; Corr = %.12f, ETA = %s" % (t, T, norm, corr, self._FormatDuration(eta)))
 
 	def postProcess(self, prop):
 		"""
@@ -114,6 +115,19 @@ class ProgressReport(PropagationTask):
 		totalTime = (curTime / (prop.PropagatedTime - prop.StartTime)) * prop.Duration
 		eta = totalTime - curTime
 		return eta
+
+	def _FormatDuration(self, t):
+		days, remainder = divmod(t, 24 * 60 * 60)
+		hours, remainder = divmod(remainder, 60 * 60)
+		minutes, seconds = divmod(remainder, 60)
+		if days > 0:
+			timeStr = "%id %ih" % (days, hours)
+		elif hours > 0:
+			timeStr = "%ih %im" % (hours, minutes)
+		else:
+			timeStr = "%im %is" % (minutes, seconds)
+			
+		return timeStr
 
 
 class DisplayGMRESError(PropagationTask):
