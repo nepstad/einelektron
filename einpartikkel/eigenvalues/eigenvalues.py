@@ -1,4 +1,5 @@
-from numpy import *
+from numpy import real, array, double, argsort, zeros, arctan2, exp, \
+	conj, dot, sqrt, imag
 import scipy
 import scipy.linalg
 
@@ -20,10 +21,17 @@ def SetupRadialEigenstates(prop, potentialIndices=[0], mList = [0]):
 	
 	"""
 
+	myTimers = pyprop.Timers()
+
 	if not pyprop.IsSingleProc():
 		raise Exception("Works only on a single processor")
 
+	#Setup overlap matrix
+	myTimers["Setup overlap matrix"].Start()
 	S = SetupOverlapMatrix(prop)
+	myTimers["Setup overlap matrix"].Stop()
+
+	#Get phase stuff
 	bspl = prop.psi.GetRepresentation().GetRepresentation(1).GetBSplineObject()
 	angRepr = prop.psi.GetRepresentation().GetRepresentation(0)
 	phaseGrid = array((0, bspl.GetBreakpointSequence()[1]), dtype=double)
@@ -35,16 +43,19 @@ def SetupRadialEigenstates(prop, potentialIndices=[0], mList = [0]):
 	lmIdxList = []
 
 	lmCount = prop.psi.GetData().shape[0]
-	eigenvectorScaling = 1
 
 	for angIdx in range(lmCount):
 		lmIdx = angRepr.Range.GetLmIndex(angIdx)
 		if not lmIdx.m in mList:
 			continue
 		print "Calculating eigenpairs for l,m = %s,%s..." % (lmIdx.l, lmIdx.m)
+		myTimers["Setup radial hamilton matrix"].Start()
 		M = SetupRadialMatrix(prop, potentialIndices, angIdx)
+		myTimers["Setup radial hamilton matrix"].Stop()
 
-		E, V = scipy.linalg.eig(a=M, b=S)
+		myTimers["Diagonalize"].Start()
+		E, V = scipy.linalg.eigh(a=M, b=S)
+		myTimers["Diagonalize"].Stop()
 
 		idx = argsort(real(E))
 		E = real(E[idx])
@@ -57,12 +68,15 @@ def SetupRadialEigenstates(prop, potentialIndices=[0], mList = [0]):
 
 		#assure correct phase convention (first oscillation should start out real positive)
 		for i, curE in enumerate(E):
-			bspl.ConstructFunctionFromBSplineExpansion(V[:,i].copy(), phaseGrid, phaseBuffer)
+			eigVecBuf = array(V[:,i], dtype=complex)
+			bspl.ConstructFunctionFromBSplineExpansion(eigVecBuf, phaseGrid, phaseBuffer)
 			phase = arctan2(imag(phaseBuffer[1]), real(phaseBuffer[1]))
 			V[:,i] *= exp(-1.0j * phase)
 
 		angIdxList += [angIdx]
 		lmIdxList += [lmIdx]
+
+		print "\n", myTimers, "\n"
 
 	return eigenValues, eigenVectors, angIdxList, lmIdxList
 
@@ -85,8 +99,12 @@ def SetRadialEigenstate(psi, eigenVectors, angIdxList, quantumNumbers, sourceSca
 
 
 def SetupRadialMatrix(prop, whichPotentials, angularIndex):
+	"""Extract real symmetric radial matrix from tensor potential
+
+	"""
+
 	matrixSize = prop.psi.GetData().shape[1]
-	matrix = zeros((matrixSize, matrixSize), dtype=complex)
+	matrix = zeros((matrixSize, matrixSize), dtype=double)
 
 	for potNum in whichPotentials:	
 		if isinstance(potNum, pyprop.TensorPotential):
@@ -105,8 +123,9 @@ def SetupRadialMatrix(prop, whichPotentials, angularIndex):
 
 		for i, (x,xp) in enumerate(basisPairs):
 			indexLeft = x
-			indexRight = xp
-			matrix[indexLeft, indexRight] += potential.PotentialData[idx, i]
+			indexRight = xp 
+			matrix[indexLeft, indexRight] += \
+				potential.PotentialData[idx,i].real
 
 	return matrix
 
