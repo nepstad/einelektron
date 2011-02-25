@@ -1,9 +1,7 @@
 import pyprop
 import scipy
-from pyprop.core import LmIndex
 from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array, linspace, pi
 from numpy import maximum, sum, arctan2, imag, real, outer, sqrt, cos, sin, exp
-from ..eigenvalues.eigenvalues import SetupRadialEigenstates, SetupOverlapMatrix
 import eigenstates
 import coulombwaves
 from scipy.special import gamma, sph_harm
@@ -130,7 +128,7 @@ class EigenstateAnalysis:
 
 		"""
 
-		self.Logger("Now calculating dP/dE...")
+		self.Logger.info("Now calculating dP/dE...")
 
 		#Multiply overlap on wavefunction
 		overlapPsi = self.MultiplyOverlap(psi)
@@ -145,7 +143,6 @@ class EigenstateAnalysis:
 		totalIon = 0
 
 		#Loops over {l,m}, and corresponding eigenvalues/eigenvectors.
-		
 		for angIdx, curE, curV, l, m in self.Eigenstate.IterateStates(self.BoundThreshold):
 			#Get projection on eigenstates.
 			# | < V | S Psi > |**2
