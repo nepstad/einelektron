@@ -25,10 +25,14 @@ public:
 	CustomPotential_LaserVelocity_X() {}
 	virtual ~CustomPotential_LaserVelocity_X() {}
 
+	cplx Charge;
+
 	void ApplyConfigSection(const ConfigSection &config)
 	{
 		config.Get("radial_rank", RadialRank);
 		config.Get("angular_rank", AngularRank);
+		//charge with sign
+		config.Get("charge", Charge);		
 	}
 
 	virtual void SetBasisPairs(int rank, const BasisPairList &basisPairs)
@@ -101,6 +105,9 @@ public:
 				double r = localr(ri);
 				
 				data(index) = - IM * coupling/r;
+
+				//Charge scaling from config
+				data(index) *= (-1.0) * Charge;
 			}
 		}
 	}
@@ -131,10 +138,14 @@ public:
 	CustomPotential_LaserVelocityDerivativeR_X() {}
 	virtual ~CustomPotential_LaserVelocityDerivativeR_X() {}
 
+	cplx Charge;
+
 	void ApplyConfigSection(const ConfigSection &config)
 	{
 		config.Get("radial_rank", RadialRank);
 		config.Get("angular_rank", AngularRank);
+		//charge with sign
+		config.Get("charge", Charge);	
 	}
 
 	virtual void SetBasisPairs(int rank, const BasisPairList &basisPairs)
@@ -211,12 +222,14 @@ public:
 			 */
 			coupling = velocityHelperX::I1integral(l,m,lp,mp);
 
-			//cout << l << "\t"  << m << "\t" << lp << "\t"  << mp << "\t" << coupling << "\t deriv" << endl;
 
 			for (int ri=0; ri<rCount; ri++)
 			{
 				index(RadialRank) = ri;
 				data(index) = - IM * coupling;
+
+				//Charge scaling from config
+				data(index) *= (-1.0) * Charge;
 			}
 		}
 	}

@@ -415,6 +415,7 @@ void Export_wrapper()
     ;
 
     class_< CustomPotential_LaserVelocity<2>, boost::noncopyable, CustomPotential_LaserVelocity_2_Wrapper >("CustomPotential_LaserVelocity_2", init<  >())
+        .def_readwrite("Charge", &CustomPotential_LaserVelocity<2>::Charge)
         .def("SetBasisPairs", &CustomPotential_LaserVelocity<2>::SetBasisPairs, &CustomPotential_LaserVelocity_2_Wrapper::default_SetBasisPairs)
         .def("UpdatePotentialData", &CustomPotential_LaserVelocity<2>::UpdatePotentialData, &CustomPotential_LaserVelocity_2_Wrapper::default_UpdatePotentialData)
         .def("ApplyConfigSection", &CustomPotential_LaserVelocity<2>::ApplyConfigSection)
@@ -422,6 +423,7 @@ void Export_wrapper()
     ;
 
     class_< CustomPotential_LaserVelocity_X<2>, boost::noncopyable, CustomPotential_LaserVelocity_X_2_Wrapper >("CustomPotential_LaserVelocity_X_2", init<  >())
+        .def_readwrite("Charge", &CustomPotential_LaserVelocity_X<2>::Charge)
         .def("SetBasisPairs", &CustomPotential_LaserVelocity_X<2>::SetBasisPairs, &CustomPotential_LaserVelocity_X_2_Wrapper::default_SetBasisPairs)
         .def("UpdatePotentialData", &CustomPotential_LaserVelocity_X<2>::UpdatePotentialData, &CustomPotential_LaserVelocity_X_2_Wrapper::default_UpdatePotentialData)
         .def("ApplyConfigSection", &CustomPotential_LaserVelocity_X<2>::ApplyConfigSection)
@@ -429,6 +431,7 @@ void Export_wrapper()
     ;
 
     class_< CustomPotential_LaserVelocity_Y<2>, boost::noncopyable, CustomPotential_LaserVelocity_Y_2_Wrapper >("CustomPotential_LaserVelocity_Y_2", init<  >())
+        .def_readwrite("Charge", &CustomPotential_LaserVelocity_Y<2>::Charge)
         .def("SetBasisPairs", &CustomPotential_LaserVelocity_Y<2>::SetBasisPairs, &CustomPotential_LaserVelocity_Y_2_Wrapper::default_SetBasisPairs)
         .def("UpdatePotentialData", &CustomPotential_LaserVelocity_Y<2>::UpdatePotentialData, &CustomPotential_LaserVelocity_Y_2_Wrapper::default_UpdatePotentialData)
         .def("ApplyConfigSection", &CustomPotential_LaserVelocity_Y<2>::ApplyConfigSection)
@@ -436,6 +439,7 @@ void Export_wrapper()
     ;
 
     class_< CustomPotential_LaserVelocityDerivativeR<2>, boost::noncopyable, CustomPotential_LaserVelocityDerivativeR_2_Wrapper >("CustomPotential_LaserVelocityDerivativeR_2", init<  >())
+        .def_readwrite("Charge", &CustomPotential_LaserVelocityDerivativeR<2>::Charge)
         .def("SetBasisPairs", &CustomPotential_LaserVelocityDerivativeR<2>::SetBasisPairs, &CustomPotential_LaserVelocityDerivativeR_2_Wrapper::default_SetBasisPairs)
         .def("UpdatePotentialData", &CustomPotential_LaserVelocityDerivativeR<2>::UpdatePotentialData, &CustomPotential_LaserVelocityDerivativeR_2_Wrapper::default_UpdatePotentialData)
         .def("ApplyConfigSection", &CustomPotential_LaserVelocityDerivativeR<2>::ApplyConfigSection)
@@ -443,6 +447,7 @@ void Export_wrapper()
     ;
 
     class_< CustomPotential_LaserVelocityDerivativeR_Y<2>, boost::noncopyable, CustomPotential_LaserVelocityDerivativeR_Y_2_Wrapper >("CustomPotential_LaserVelocityDerivativeR_Y_2", init<  >())
+        .def_readwrite("Charge", &CustomPotential_LaserVelocityDerivativeR_Y<2>::Charge)
         .def("SetBasisPairs", &CustomPotential_LaserVelocityDerivativeR_Y<2>::SetBasisPairs, &CustomPotential_LaserVelocityDerivativeR_Y_2_Wrapper::default_SetBasisPairs)
         .def("UpdatePotentialData", &CustomPotential_LaserVelocityDerivativeR_Y<2>::UpdatePotentialData, &CustomPotential_LaserVelocityDerivativeR_Y_2_Wrapper::default_UpdatePotentialData)
         .def("ApplyConfigSection", &CustomPotential_LaserVelocityDerivativeR_Y<2>::ApplyConfigSection)
@@ -450,6 +455,7 @@ void Export_wrapper()
     ;
 
     class_< CustomPotential_LaserVelocityDerivativeR_X<2>, boost::noncopyable, CustomPotential_LaserVelocityDerivativeR_X_2_Wrapper >("CustomPotential_LaserVelocityDerivativeR_X_2", init<  >())
+        .def_readwrite("Charge", &CustomPotential_LaserVelocityDerivativeR_X<2>::Charge)
         .def("SetBasisPairs", &CustomPotential_LaserVelocityDerivativeR_X<2>::SetBasisPairs, &CustomPotential_LaserVelocityDerivativeR_X_2_Wrapper::default_SetBasisPairs)
         .def("UpdatePotentialData", &CustomPotential_LaserVelocityDerivativeR_X<2>::UpdatePotentialData, &CustomPotential_LaserVelocityDerivativeR_X_2_Wrapper::default_UpdatePotentialData)
         .def("ApplyConfigSection", &CustomPotential_LaserVelocityDerivativeR_X<2>::ApplyConfigSection)

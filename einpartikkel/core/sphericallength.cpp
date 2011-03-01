@@ -202,6 +202,7 @@ public:
 	virtual void ApplyConfigSection(const ConfigSection &config)
 	{
 		CustomPotentialSphericalBase<Rank>::ApplyConfigSection(config);
+		//charge with sign
 		config.Get("charge", Charge);
 	}
 
