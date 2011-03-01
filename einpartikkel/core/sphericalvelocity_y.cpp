@@ -214,7 +214,6 @@ public:
 			coupling = velocityHelperY::I1integral(l,m,lp,mp);
 
 			
-			//cout << l << "\t"  << m << "\t" << lp << "\t"  << mp << "\t" << coupling << "\t deriv" << endl;
 
 			for (int ri=0; ri<rCount; ri++)
 			{

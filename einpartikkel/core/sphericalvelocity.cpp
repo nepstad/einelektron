@@ -97,6 +97,7 @@ public:
 			double coupling = -(C + D) - (E + F);
 
 
+
 			for (int ri=0; ri<rCount; ri++)
 			{
 				index(RadialRank) = ri;
@@ -207,7 +208,7 @@ public:
 			for (int ri=0; ri<rCount; ri++)
 			{
 				index(RadialRank) = ri;
-				data(index) = - IM * coupling;
+				data(index) = - IM* coupling;
 			}
 		}
 	}

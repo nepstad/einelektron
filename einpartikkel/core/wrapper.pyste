@@ -11,6 +11,9 @@ CustomPotential("2")
 CustomPotential = Template("CustomPotential_LaserLength_X", "sphericallength.cpp")
 CustomPotential("2")
 
+CustomPotential = Template("CustomPotential_LaserLength_Y", "sphericallength.cpp")
+CustomPotential("2")
+
 CustomPotential = Template("CustomPotential_LaserVelocity", "sphericalvelocity.cpp")
 CustomPotential("2")
 

@@ -108,7 +108,6 @@ public:
 		
 		coupling += (-I1_1 - I2_1 + I3_1);
 		
-		//cout << l << "\t"  << m << "\t" << lp << "\t"  << mp << "\t" << I1_1 << "\t" << I2_1 << "\t" << I3_1 << "\t" << coupling << "\t Js:" << J1 << "\t" << J2 << "    test " << LegendreNorm(l+1,m+dlta_m) * K_lm * K2_term2 * M_PI * LegendreNorm(lp,mp) * (dlta1 + dlta2)  << endl;
 
 		return coupling;
 	}

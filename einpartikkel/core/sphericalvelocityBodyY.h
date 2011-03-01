@@ -107,7 +107,6 @@ public:
 		
 		coupling += (-I1_1 + I2_1 + I3_1);
 		
-		//cout << l << "\t"  << m << "\t" << lp << "\t"  << mp << "\t" << I1_1 << "\t" << I2_1 << "\t" << I3_1 << "\t" << coupling << "\t Js:" << J1 << "\t" << J2 << endl;
 
 		return coupling;
 	}
