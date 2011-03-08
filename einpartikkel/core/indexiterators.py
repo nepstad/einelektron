@@ -39,7 +39,8 @@ class DefaultLmIndexIterator:
 				yield LmIndex(curl,curm)
 		
 	def __repr__(self):
-		return "sys.modules['pyprop'].DefaultLmIndexIterator(%s)" % (self.lmax)
+		return "sys.modules['pyprop'].ProjectNamespace['%s'](%s)" % \
+			(self.__class__.__name__, self.lmax)
 
 
 @RegisterAll
@@ -74,4 +75,5 @@ class FixedMLmIndexIterator:
 				yield LmIndex(curl,curm)
 		
 	def __repr__(self):
-		return "sys.modules['pyprop'].FixedMLmIndexIterator(%s, %s)" % (self.lmax, self.m)
+		return "sys.modules['pyprop'].ProjectNamespace['%s'](%s, %s)" % \
+			(self.__class__.__name__, self.lmax, self.m)
