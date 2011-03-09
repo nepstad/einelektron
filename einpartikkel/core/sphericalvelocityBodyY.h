@@ -271,11 +271,12 @@ public:
 				for (int i=0; i<=outerMax; i++)
 				{
 					double innerSum = .0;
+					double C_lmi = Cconstant(l,m,i);
 					for (int j=0; j<=innerMax; j++)
 					{
-						innerSum += Cconstant(p,q,j) * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
+						innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
 					}
-					outerSum += innerSum * Cconstant(l,m,i); 
+					outerSum += innerSum; // * Cconstant(l,m,i); 
 				}
 				return outerSum;
 			
