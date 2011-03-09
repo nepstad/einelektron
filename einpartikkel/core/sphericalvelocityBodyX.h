@@ -269,7 +269,7 @@ public:
 				int outerMax = std::floor((l-m)/2.);
 				int innerMax = std::floor((p-q)/2.);
 
-				
+				vector<double> v;	
 
 				for (int i=0; i<=outerMax; i++)
 				{
@@ -277,10 +277,19 @@ public:
 					double innerSum = .0;
 					for (int j=0; j<=innerMax; j++)
 					{
-						innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
+						double tmp;
+						//innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
+						tmp = Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
+						v.push_back(tmp);
 					}
-					outerSum += innerSum; // * Cconstant(l,m,i); 
+					//outerSum += innerSum; // * Cconstant(l,m,i); 
 				}
+
+				for (int idx = 0; idx < v.size(); idx++)
+				{	
+					outerSum += v[idx];
+				}	
+
 				return outerSum;
 			
 			}
