@@ -97,7 +97,11 @@ public:
 			if (std::abs(l - lp) != 1) continue;
 
 			double coupling = velocityHelperY::sphericalvelocityBodyY(lp,mp,l,m);
-
+	
+			//cout << "SS" << endl;
+			//double s = velocityHelperY::K2(30,5,31,6);
+			
+			//int stian = testkode::testsort(3);
 
 			for (int ri=0; ri<rCount; ri++)
 			{

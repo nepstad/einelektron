@@ -26,6 +26,7 @@ public:
 		for (int idx = 0; idx < v.size(); idx++)
 		{
 			sum += v[idx];
+			cout.precision(15);
 			cout << "H " << v[idx] << " "<< sum << endl;
 		}
 
@@ -134,7 +135,18 @@ public:
 		I3_1 += dlta_m * E_lm * temp;  
 		J2 += dlta_m * E_lm * temp;
 
-		
+		//tester stabilitet
+		//vector<double> v;
+		//v.push_back(-I1_1);
+		//v.push_back(I2_1);
+		//v.push_back(I3_1);
+
+		//for (int idx = 0; idx < v.size(); idx++)
+		//{	
+		//	coupling += v[idx];
+		//}
+
+
 		coupling += (-I1_1 + I2_1 + I3_1);
 		
 
@@ -295,6 +307,7 @@ public:
 			if ((l+p-m-q) % 2 == 0)
 			{
 				double outerSum = 0.0;
+				//double outerSumOld = 0.0;
 				int outerMax = std::floor((l-m)/2.);
 				int innerMax = std::floor((p-q)/2.);
 
@@ -312,15 +325,18 @@ public:
 						tmp = Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
 						v.push_back(tmp);
 					}
-					//outerSum += innerSum; // * Cconstant(l,m,i); 
+					//outerSumOld += innerSum; // * Cconstant(l,m,i); 
 				}
+
+				sort(v.begin(),v.end());
 				
 				for (int idx = 0; idx < v.size(); idx++)
 				{	
 					outerSum += v[idx];
-				}			
-
-
+				}		
+				//cout.precision(15);
+				//cout << outerSum << " " << outerSumOld << endl;
+				
 				return outerSum;
 			
 			}
