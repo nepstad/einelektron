@@ -162,21 +162,23 @@ public:
 		}
 		else
 		{
-			return std::sqrt( ((l+m)*(l-m)*(l+m-1.)*(l-m-1.)) / ((2.*l+1.)*std::pow(2.*l-1.,2)*(2.*l-3.)) );
+			return std::sqrt( exp(log(l+m) + log(l-m) + log(l+m-1) + log(l-m-1) - log(2.*l+1.) - 2 * log(2.*l-1.) - log(2.*l-3.)) );
 		}
 	}
 
 	static double G(double l, double m)
 	{
 		{
-			return ((l+m)*(l-m)) / ((2.*l+1.)*(2.*l-1.));
+			//return ((l+m)*(l-m)) / ((2.*l+1.)*(2.*l-1.));
+			return exp(log(l+m) + log(l-m) - log(2*l+1) - log(2*l-1));
 		}
 	}
 
 	static double H(double l, double m)
 	{
 		{
-			return ((l+m+1.)*(l-m+1.)) / ((2.*l+1.)*(2.*l+3.)) ;
+			//return ((l+m+1.)*(l-m+1.)) / ((2.*l+1.)*(2.*l+3.)) ;
+			return exp( log(l+m+1) + log(l-m+1) - log(2*l+1) - log(2*l+3)) ;
 		}
 	}
 
@@ -189,7 +191,8 @@ public:
 		}
 		else
 		{
-			return std::sqrt( ((l+m+1.)*(l-m+1.)*(l+m+2.)*(l-m+2.)) / ((2.*l+1.)*std::pow(2.*l+3.,2)*(2.*l+5.)) );
+			//return std::sqrt( ((l+m+1.)*(l-m+1.)*(l+m+2.)*(l-m+2.)) / ((2.*l+1.)*std::pow(2.*l+3.,2)*(2.*l+5.)) );
+			return std::sqrt( exp( log(l+m+1) + log(l-m+1) + log(l+m+2) + log(l-m+2) - log(2.*l+1.) - 2 * log(2.*l+3) - log(2.*l+5)) );
 		}
 	}
 
@@ -208,7 +211,8 @@ public:
 		}
 		else
 		{
-			return std::sqrt( ((l+m+delta_m(m))*(l-m-delta_m(m))) / ((2.*l+1.)*(2.*l-1.)) );
+			//return std::sqrt( ((l+m+delta_m(m))*(l-m-delta_m(m))) / ((2.*l+1.)*(2.*l-1.)) );
+			return std::sqrt( exp(log(l+m+delta_m(m)) + log(l-m-delta_m(m)) - log(2.*l+1.) - log(2.*l-1.)) );
 		}
 	}
 
@@ -223,7 +227,8 @@ public:
 		}
 		else
 		{
-			return std::sqrt( ((l+m+delta_m(m)+1.)*(l-m-delta_m(m)+1.)) / ((2.*l+1.)*(2.*l+3.)) );
+			//return std::sqrt( ((l+m+delta_m(m)+1.)*(l-m-delta_m(m)+1.)) / ((2.*l+1.)*(2.*l+3.)) );
+			return std::sqrt(exp(log(l+m+delta_m(m)+1.) + log(l-m-delta_m(m)+1.)  - log(2.*l+1.) - log(2.*l+3.)));
 		}
 	}
 
@@ -331,14 +336,10 @@ public:
 
 				for (int i=0; i<=outerMax; i++)
 				{
-					//double innerSum = .0;
-					//double C_lmi = Cconstant(l,m,i);
 
-					//vector<double> w;
 					for (int j=0; j<=innerMax; j++)
 					{
 
-						//innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
 					
 						double gmArg = gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.));
 
@@ -350,16 +351,11 @@ public:
 						
 						v.push_back(tmp);
 	
-						//cout << "gmARG " << gmArg <<  "L " << l << " " << m << " " << i << " " << p << " " << q << " " << j <<endl;
 
-					
-
-						//tmp = Cconstant(p,q,j) * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
 					}
 					
 
 
-					//outerSum += innerSum; // * Cconstant(l,m,i); 
 				}
 
 
