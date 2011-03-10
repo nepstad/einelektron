@@ -104,8 +104,10 @@ public:
 
 		I3_1 += dlta_m * E_lm * temp;  
 		J2 += dlta_m * E_lm * temp;
-
-
+		
+		cout << "coupling " << coupling << endl;
+		cout <<"G " << -I1_1 << " " << I2_1 << " " << I3_1 <<" " << -I1_1 + I2_1 + I3_1 << endl;
+		
 		coupling += (-I1_1 + I2_1 + I3_1);
 		
 
@@ -329,30 +331,32 @@ public:
 
 				for (int i=0; i<=outerMax; i++)
 				{
-					double innerSum = .0;
-					double C_lmi = Cconstant(l,m,i);
+					//double innerSum = .0;
+					//double C_lmi = Cconstant(l,m,i);
 
-					vector<double> w;
+					//vector<double> w;
 					for (int j=0; j<=innerMax; j++)
 					{
-						double tmp;
 
 						//innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
-						
-						tmp = Cconstant(p,q,j) * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
-						w.push_back(tmp);
-						//v.push_back(tmp);
-					}
-					sort(w.begin(),w.end(),magnitude());
 					
-					for (int k = 0; k < w.size(); k++)
-					{
-						innerSum += w[k];
-						cout.precision(15);
-						//cout<< "Q " << w[k] << endl;
-					}						
-					v.push_back(innerSum * C_lmi);
-					//cout << "--------------"<< endl;
+						double gmArg = gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.));
+
+						gmArg += gsl_sf_lngamma(p+q+1)-gsl_sf_lngamma(q+j+1)-gsl_sf_lngamma(j+1)-gsl_sf_lngamma(p-q-2*j+1);
+						gmArg += gsl_sf_lngamma(l+m+1)-gsl_sf_lngamma(m+i+1)-gsl_sf_lngamma(i+1)-gsl_sf_lngamma(l-m-2*i+1);
+						gmArg -= log(2) *( m + q + 2 * (i + j));
+
+						double tmp = std::pow(-1,i+j) * exp(gmArg);
+						
+						v.push_back(tmp);
+	
+						//cout << "gmARG " << gmArg <<  "L " << l << " " << m << " " << i << " " << p << " " << q << " " << j <<endl;
+
+					
+
+						//tmp = Cconstant(p,q,j) * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
+					}
+					
 
 
 					//outerSum += innerSum; // * Cconstant(l,m,i); 
@@ -364,7 +368,6 @@ public:
 				for (int idx = 0; idx < v.size(); idx++)
 				{
 					outerSum += v[idx];
-					//cout << "F " << v[idx] << endl;
 				}		
 				
 				return outerSum;
