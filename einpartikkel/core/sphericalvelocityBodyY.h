@@ -13,7 +13,8 @@ class velocityHelperY
 public:
 	static double sphericalvelocityBodyY(int l, int m, int lp, int mp)	
 	{
-	
+
+		double eps = std::pow(1,-15);
 
 		//SphericalBasis::ClebschGordan cg;
 
@@ -65,10 +66,10 @@ public:
 		 */
 
 
-		F_lm = F(l,m);
-		G_lm = G(l,m);
-		H_lm = H(l,m);
-		I_lm = I(l,m);
+		F_lm = F(l,m,eps);
+		G_lm = G(l,m,eps);
+		H_lm = H(l,m,eps);
+		I_lm = I(l,m,eps);
 
 		K1_term1 = K1(lp,std::abs(mp),l-2,std::abs(m));
 		K1_term2 = K1(lp,std::abs(mp),l,std::abs(m));
@@ -86,8 +87,8 @@ public:
 		/*
 		 * Integral J2 in r1.
 		 */
-		J_lm = J(l,m);
-		K_lm = K(l,m);
+		J_lm = J(l,m,eps);
+		K_lm = K(l,m,eps);
 		E_lm = E(l,m);
 	
 		dlta_m = delta_m(m);
@@ -105,7 +106,6 @@ public:
 		I3_1 += dlta_m * E_lm * temp;  
 		J2 += dlta_m * E_lm * temp;
 		
-		cout << "coupling " << coupling << endl;
 		cout <<"G " << -I1_1 << " " << I2_1 << " " << I3_1 <<" " << -I1_1 + I2_1 + I3_1 << endl;
 		
 		coupling += (-I1_1 + I2_1 + I3_1);
@@ -153,10 +153,10 @@ public:
 		}
 	}
 
-	static double F(double l, double m)
+	static double F(double l, double m, double eps)
 	{
 		double j = ((l+m)*(l-m)*(l+m-1.)*(l-m-1.)) / ((2.*l+1.)*std::pow(2.*l-1.,2)*(2.*l-3.));
-		if (j < 0.)
+		if (j < eps)
 		{
 			return 0.;
 		}
@@ -166,26 +166,38 @@ public:
 		}
 	}
 
-	static double G(double l, double m)
+	static double G(double l, double m, double eps)
 	{
+		double j = ((l+m)*(l-m)) / ((2.*l+1.)*(2.*l-1.));
+		if (j < eps)
+		{
+			return 0.;
+		}
+		else
 		{
 			//return ((l+m)*(l-m)) / ((2.*l+1.)*(2.*l-1.));
 			return exp(log(l+m) + log(l-m) - log(2*l+1) - log(2*l-1));
 		}
 	}
 
-	static double H(double l, double m)
+	static double H(double l, double m, double eps)
 	{
+		double j = ((l+m+1.)*(l-m+1.)) / ((2.*l+1.)*(2.*l+3.));
+		if (j < eps)
+		{
+			return 0.;
+		}
+		else
 		{
 			//return ((l+m+1.)*(l-m+1.)) / ((2.*l+1.)*(2.*l+3.)) ;
 			return exp( log(l+m+1) + log(l-m+1) - log(2*l+1) - log(2*l+3)) ;
 		}
 	}
 
-	static double I(double l, double m)
+	static double I(double l, double m, double eps)
 	{
 		double j = ((l+m+1.)*(l-m+1.)*(l+m+2.)*(l-m+2.)) / ((2.*l+1.)*std::pow(2.*l+3.,2)*(2.*l+5.));
-		if (j < 0.)
+		if (j < eps)
 		{
 			return 0.;
 		}
@@ -202,10 +214,10 @@ public:
 	}
 
 
-	static double J(double l, double m)
+	static double J(double l, double m, double eps)
 	{
 		double j = ((l+m+delta_m(m))*(l-m-delta_m(m))) / ((2.*l+1.)*(2.*l-1.));
-		if (j < 0.)
+		if (j < eps)
 		{
 			return 0.;
 		}
@@ -218,10 +230,10 @@ public:
 
 
 
-	static double K(double l, double m)
+	static double K(double l, double m, double eps)
 	{
 		double j = ((l+m+delta_m(m)+1.)*(l-m-delta_m(m)+1.)) / ((2.*l+1.)*(2.*l+3.));
-		if (j < 0)
+		if (j < eps)
 		{
 			return 0.;
 		}
