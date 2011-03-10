@@ -14,7 +14,7 @@ public:
 	static double sphericalvelocityBodyY(int l, int m, int lp, int mp)	
 	{
 
-		double eps = std::pow(1,-15);
+		double eps = std::pow(10.,-15);
 
 		//SphericalBasis::ClebschGordan cg;
 
