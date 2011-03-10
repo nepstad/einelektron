@@ -6,36 +6,6 @@
 #include "sphericalbase.h"
 
 
-//Test
-class testkode
-{
-public:
-	static int testsort(int a)
-	{
-		//blitz::Array<double,1> A(4);
-		vector<double> v;
-		
-		v.push_back(3.);
-		v.push_back(0.00000001);
-		v.push_back(0.0000000003);
-		
-
-		sort(v.begin(),v.end());
-
-		double sum = 0.;
-		for (int idx = 0; idx < v.size(); idx++)
-		{
-			sum += v[idx];
-			cout.precision(15);
-			cout << "H " << v[idx] << " "<< sum << endl;
-		}
-
-
-		cout << "HALLO VERDEN " << sum  << endl;
-		return a;
-		
-	}
-};
 
 
 class velocityHelperY
@@ -307,7 +277,7 @@ public:
 			if ((l+p-m-q) % 2 == 0)
 			{
 				double outerSum = 0.0;
-				//double outerSumOld = 0.0;
+				double outerSumOld = 0.0;
 				int outerMax = std::floor((l-m)/2.);
 				int innerMax = std::floor((p-q)/2.);
 
@@ -321,18 +291,21 @@ public:
 					for (int j=0; j<=innerMax; j++)
 					{
 						double tmp;
-						//innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
+						innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
 						tmp = Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
 						v.push_back(tmp);
 					}
-					//outerSumOld += innerSum; // * Cconstant(l,m,i); 
+					outerSumOld += innerSum; // * Cconstant(l,m,i); 
 				}
 
-				sort(v.begin(),v.end());
+
+				sort(v.begin(),v.end(),magnitude());
 				
 				for (int idx = 0; idx < v.size(); idx++)
-				{	
+				{
+					cout.precision(15);
 					outerSum += v[idx];
+					//cout << "T " << outerSum << " " << v[idx] << endl; 
 				}		
 				//cout.precision(15);
 				//cout << outerSum << " " << outerSumOld << endl;
@@ -369,6 +342,16 @@ public:
 		SphericalBasis::ClebschGordan cg;		
 		return MyCoefficient(lp,l) * cg(l,1,0,0,lp,0) * (cg(l,1,m,-1,lp,mp) + cg(l,1,m,1,lp,mp));
 	}
+
+	//testing testing
+	struct magnitude {
+  		bool operator()(const double& x, const double& y)
+    	const
+    	{ return abs(x) < abs(y); }
+	};
+
+
+
 
 };
 

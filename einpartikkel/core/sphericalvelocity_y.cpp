@@ -99,7 +99,7 @@ public:
 			double coupling = velocityHelperY::sphericalvelocityBodyY(lp,mp,l,m);
 	
 			//cout << "SS" << endl;
-			//double s = velocityHelperY::K2(30,5,31,6);
+			//double s = velocityHelperY::K2(31,0,31,0);
 			
 			//int stian = testkode::testsort(3);
 
