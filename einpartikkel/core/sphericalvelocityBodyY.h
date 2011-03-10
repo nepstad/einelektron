@@ -55,7 +55,7 @@ public:
 		/*
 		 * Integral I2 in r1.
 		 */
-		norms = LegendreNorm(l,m) * LegendreNorm(lp,mp);
+		norms = LegendreNormDouble(l,m,lp,mp);
 
 		temp = M_PI * m * norms * (dlta1 + dlta2); 
 		temp *= K1(lp,std::abs(mp),l,std::abs(m));
@@ -75,14 +75,13 @@ public:
 		K1_term2 = K1(lp,std::abs(mp),l,std::abs(m));
 		K1_term3 = K1(lp,std::abs(mp),l+2,std::abs(m));
 
-		temp = LegendreNorm(l-2,m) * F_lm * K1_term1;
-		temp += LegendreNorm(l,m) * (G_lm + H_lm) * K1_term2;
-		temp += LegendreNorm(l+2,m) * I_lm * K1_term3;
-		temp *= M_PI * (-dlta1 + dlta2) * LegendreNorm(lp,mp);
+		temp = LegendreNormDouble(l-2,m,lp,mp) * F_lm * K1_term1;
+		temp += LegendreNormDouble(l,m,lp,mp) * (G_lm + H_lm) * K1_term2;
+		temp += LegendreNormDouble(l+2,m,lp,mp) * I_lm * K1_term3;
+		temp *= M_PI * (-dlta1 + dlta2); 
 
 
 		I3_1 += std::abs(m) * temp;
-		J1 += std::abs(m) * temp;
 
 		/*
 		 * Integral J2 in r1.
@@ -97,14 +96,13 @@ public:
 		K2_term1 = K2(l-1,std::abs(m+dlta_m),lp,std::abs(mp));
 		K2_term2 = K2(l+1,std::abs(m+dlta_m),lp,std::abs(mp));
 
-		temp = LegendreNorm(l-1,m+dlta_m) * J_lm * K2_term1;
-		temp += LegendreNorm(l+1,m+dlta_m) * K_lm * K2_term2;
-		temp *= M_PI * LegendreNorm(lp,mp) * (-dlta1 + dlta2);
+		temp = LegendreNormDouble(l-1,m+dlta_m,lp,mp) * J_lm * K2_term1;
+		temp += LegendreNormDouble(l+1,m+dlta_m,lp,mp) * K_lm * K2_term2;
+		temp *= M_PI * (-dlta1 + dlta2);
 
 
 
 		I3_1 += dlta_m * E_lm * temp;  
-		J2 += dlta_m * E_lm * temp;
 		
 		cout <<"G " << -I1_1 << " " << I2_1 << " " << I3_1 <<" " << -I1_1 + I2_1 + I3_1 << endl;
 		
@@ -133,6 +131,26 @@ public:
 		}
 	}
 	
+	static double LegendreNormDouble(double l, double m, double lp, double mp)
+	{
+
+		if ( (std::abs(m)<=l && l>=0) && (std::abs(mp)<=lp && lp>=0))
+		{
+			double tmp = gsl_sf_lnfact(l - std::abs(m)) + gsl_sf_lnfact(lp - std::abs(mp)); 
+			tmp -= gsl_sf_lnfact(lp + std::abs(mp)) + gsl_sf_lnfact(l + std::abs(m));
+			tmp += log(2*l + 1) + log(2*lp+1);
+
+			double norm = std::pow(-1.,.5 * (m + mp + std::abs(m) + std::abs(mp))) / (4 * M_PI) * std::sqrt(exp(tmp));
+
+			return norm;
+		}
+		else
+		{
+			return 0.;
+		}
+	}
+
+
 
 	
 	static int Mykronecker(int a, int b)
