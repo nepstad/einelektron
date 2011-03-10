@@ -46,7 +46,8 @@ public:
 
 
 
-		I1_1 += I1integral(lp,mp,l,m);
+		//I1_1 += I1integral(lp,mp,l,m);
+		double term1 = (-1.) * I1integral(lp,mp,l,m);
 
 		dlta1 = Mykronecker(mp - 1, m);
 		dlta2 = Mykronecker(mp + 1, m);	
@@ -58,7 +59,9 @@ public:
 
 		temp = M_PI * m * norms * (dlta1 + dlta2); 
 		temp *= K1(lp,std::abs(mp),l,std::abs(m));
-		I2_1 += temp;
+		//I2_1 += temp;
+
+		double term2 = temp;
 
 		/*
 		 * Integral J1 in r1.
@@ -74,14 +77,20 @@ public:
 		K1_term2 = K1(lp,std::abs(mp),l,std::abs(m));
 		K1_term3 = K1(lp,std::abs(mp),l+2,std::abs(m));
 
-		temp = LegendreNorm(l-2,m) * F_lm * K1_term1;
-		temp += LegendreNorm(l,m) * (G_lm + H_lm) * K1_term2;
-		temp += LegendreNorm(l+2,m) * I_lm * K1_term3;
-		temp *= M_PI * (-dlta1 + dlta2) * LegendreNorm(lp,mp);
+		double factor = std::abs(m) * M_PI * (-dlta1 + dlta2) * LegendreNorm(lp,mp);
+		double term3 = factor * LegendreNorm(l-2,m) * F_lm * K1_term1;
+		double term4 = factor * LegendreNorm(l,m) * G_lm * K1_term2;
+		double term5 = factor * LegendreNorm(l,m) * H_lm * K1_term2;
+		double term6 = factor * LegendreNorm(l+2,m) * I_lm * K1_term3;
+
+		//temp = LegendreNorm(l-2,m) * F_lm * K1_term1;
+		//temp += LegendreNorm(l,m) * (G_lm + H_lm) * K1_term2;
+		//temp += LegendreNorm(l+2,m) * I_lm * K1_term3;
+		//temp *= M_PI * (-dlta1 + dlta2) * LegendreNorm(lp,mp);
 
 
-		I3_1 += std::abs(m) * temp;
-		J1 += std::abs(m) * temp;
+		//I3_1 += std::abs(m) * temp;
+		//J1 += std::abs(m) * temp;
 
 		/*
 		 * Integral J2 in r1.
@@ -92,34 +101,46 @@ public:
 	
 		dlta_m = delta_m(m);
 
+		double factor1 = LegendreNorm(l-1,m+dlta_m) * J_lm * M_PI * LegendreNorm(lp,mp) * (-dlta1 + dlta2) * dlta_m * E_lm;
+		double factor2 = LegendreNorm(l+1,m+dlta_m) * K_lm * M_PI * LegendreNorm(lp,mp) * (-dlta1 + dlta2) * dlta_m * E_lm;
 
-		K2_term1 = K2(l-1,std::abs(m+dlta_m),lp,std::abs(mp));
-		K2_term2 = K2(l+1,std::abs(m+dlta_m),lp,std::abs(mp));
+		vector<double> v1;
+		vector<double> v2;
 
-		temp = LegendreNorm(l-1,m+dlta_m) * J_lm * K2_term1;
-		temp += LegendreNorm(l+1,m+dlta_m) * K_lm * K2_term2;
-		temp *= M_PI * LegendreNorm(lp,mp) * (-dlta1 + dlta2);
+		v1 = K2(l-1,std::abs(m+dlta_m),lp,std::abs(mp),factor1);
+		v2 = K2(l+1,std::abs(m+dlta_m),lp,std::abs(mp),factor2);
 
-
-
-		I3_1 += dlta_m * E_lm * temp;  
-		J2 += dlta_m * E_lm * temp;
-
-		//tester stabilitet
-		//vector<double> v;
-		//v.push_back(-I1_1);
-		//v.push_back(I2_1);
-		//v.push_back(I3_1);
-
-		//for (int idx = 0; idx < v.size(); idx++)
-		//{	
-		//	coupling += v[idx];
-		//}
+		//temp = LegendreNorm(l-1,m+dlta_m) * J_lm * K2_term1;
+		//temp += LegendreNorm(l+1,m+dlta_m) * K_lm * K2_term2;
+		//temp *= M_PI * LegendreNorm(lp,mp) * (-dlta1 + dlta2);
 
 
-		coupling += (-I1_1 + I2_1 + I3_1);
+
+		//I3_1 += dlta_m * E_lm * temp;  
+		//J2 += dlta_m * E_lm * temp;
+
+
+		//coupling += (-I1_1 + I2_1 + I3_1);
+
+		vector<double> v;
+		v.reserve(v1.size() + v2.size());
+		v.insert(v.end(), v1.begin(), v1.end()); 
+		v.insert(v.end(), v2.begin(), v2.end());
+
+		v.push_back(term1);
+		v.push_back(term2);
+		v.push_back(term3);
+		v.push_back(term4);
+		v.push_back(term5);
+		v.push_back(term6);
+
+		sort(v.begin(),v.end(),magnitude());
+
+		for (int idx = 0; idx < v.size(); idx++)
+		{
+			coupling += v[idx];
+		}		
 		
-
 		return coupling;
 	}
 	
@@ -270,14 +291,14 @@ public:
 	}
 
 
-	static double K2(int l, int m, int p, int q)
+	static vector<double> K2(int l, int m, int p, int q, double factor)
 	{
 		if ((l >= std::abs(m)) && (p >= std::abs(q)))
 		{
 			if ((l+p-m-q) % 2 == 0)
 			{
 				double outerSum = 0.0;
-				double outerSumOld = 0.0;
+				//double outerSumOld = 0.0;
 				int outerMax = std::floor((l-m)/2.);
 				int innerMax = std::floor((p-q)/2.);
 
@@ -293,34 +314,40 @@ public:
 						double tmp;
 						innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
 						tmp = Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
+						tmp *= factor;
 						v.push_back(tmp);
 					}
-					outerSumOld += innerSum; // * Cconstant(l,m,i); 
+					//outerSumOld += innerSum; // * Cconstant(l,m,i); 
 				}
 
 
-				sort(v.begin(),v.end(),magnitude());
+				//sort(v.begin(),v.end(),magnitude());
 				
-				for (int idx = 0; idx < v.size(); idx++)
-				{
-					cout.precision(15);
-					outerSum += v[idx];
-					//cout << "T " << outerSum << " " << v[idx] << endl; 
-				}		
+				//for (int idx = 0; idx < v.size(); idx++)
+				//{
+				//	cout.precision(15);
+				//	outerSum += v[idx];
+				//	//cout << "T " << outerSum << " " << v[idx] << endl; 
+				//}		
 				//cout.precision(15);
 				//cout << outerSum << " " << outerSumOld << endl;
 				
-				return outerSum;
+				//return outerSum;
+				return v;
 			
 			}
 			else
 			{
-		 		return 0.0;	
+				vector<double> v;
+				v.push_back(0.0);
+		 		return v;	
 			}
 		}
 		else
-		{	
-			return 0.0;
+		{
+			vector<double> v;
+			v.push_back(0.0);
+			return v;
 		}
 	}
 
