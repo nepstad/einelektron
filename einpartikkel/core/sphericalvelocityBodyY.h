@@ -87,7 +87,7 @@ public:
 		/*
 		 * Integral J1 in r1.
 		 */
-
+	/*
 		F_lm = F(l,m,eps);
 		G_lm = G(l,m,eps);
 		H_lm = H(l,m,eps);
@@ -105,6 +105,7 @@ public:
 
 		I3_1 += std::abs(m) * temp;
 
+	*/
 		/*
 		 * J1 stable
 		 */
@@ -171,16 +172,18 @@ public:
 		J1 *= std::abs(m) * 0.5 * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
 
 
-		cout << "samme " << J1 << " "  << std::abs(m) * temp << " \t " << l << " " << m << " " << lp << " " << mp << endl;
+		//cout << "samme " << J1 << " "  << std::abs(m) * temp << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 
 
 
 		/*
 		 * Integral J2 in r1.
 		 */
+	/* 
 		J_lm = J(l,m,eps);
 		K_lm = K(l,m,eps);
 		E_lm = E(l,m);
+	
 	
 		dlta_m = delta_m(m);
 
@@ -188,16 +191,61 @@ public:
 		K2_term1 = K2(l-1,std::abs(m+dlta_m),lp,std::abs(mp));
 		K2_term2 = K2(l+1,std::abs(m+dlta_m),lp,std::abs(mp));
 
-		temp = LegendreNormDouble(l-1,m+dlta_m,lp,mp) * J_lm * K2_term1;
+		temp = LegendreNormDouble(l-1,m+dlta_m,lp,mp) * J_lm  * K2_term1;
 		temp += LegendreNormDouble(l+1,m+dlta_m,lp,mp) * K_lm * K2_term2;
 		temp *= M_PI * (-dlta1 + dlta2);
 
 
 
 		I3_1 += dlta_m * E_lm * temp;  
+	
+	*/
+		/*
+		 * J2 stable
+		 */
+
+		dlta_m = delta_m(m);
+
+		bool lnNorm4_ok = checklnLegendreNorm(l-1,m+dlta_m,lp,mp);
+		bool lnNorm5_ok = checklnLegendreNorm(l+1,m+dlta_m,lp,mp);
+
+		bool lnJ_ok = checklnJ(l,m,eps);
+		bool lnK_ok = checklnK(l,m,eps);
+		bool lnE_ok = checklnE(l,m,eps);
+
+		double fjas = 0;
+
+		if (lnE_ok == true)
+		{
+			double lnEconst = lnE(l,m);
+
+			if ((lnNorm4_ok == true) && (lnJ_ok == true))
+			{
+				double lnNorm4 = lnLegendreNorm(l-1,m+dlta_m,lp,mp);
+				double lnJconst = lnJ(l,m,eps);
+
+				J2 += lnSumK2(l-1,std::abs(m+dlta_m),lp,std::abs(mp),lnNorm4 + lnJconst + lnEconst);
+			}
+		 
+			if ((lnNorm5_ok == true) && (lnK_ok == true))
+			{
+				double lnNorm5 = lnLegendreNorm(l+1,m+dlta_m,lp,mp);
+				double lnKconst = lnK(l,m);
+
+				J2 += lnSumK2(l+1,std::abs(m+dlta_m),lp,std::abs(mp),lnNorm5 + lnKconst + lnEconst);
+			}
+		}
+
+		J2 *= dlta_m * 0.25 * (-dlta1 + dlta2) * std::pow(-1.,0.5 * (mp + std::abs(mp) + m + dlta_m + std::abs(m + dlta_m)));
+
+
+
+		//cout << "samme " << J2 << " "  << temp * dlta_m * E_lm << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 		
-		
-		coupling += (-I1_1 + I2_1 + I3_1);
+		//coupling += (-I1_1 + I2_1 + I3_1);
+		//cout << "coupling " << coupling << " " <<-I1_1 + I2_1 + J1 + J2 << endl; 
+
+		coupling += (-I1_1 + I2_1 + J1 + J2);
 		
 
 		return coupling;
@@ -282,6 +330,25 @@ public:
 		else
 		{
 			return std::sqrt( (l - std::abs(m)) * (l + std::abs(m) + 1.) );
+		}
+	}
+
+	static double lnE(double l, double m)
+	{
+		return 0.5 * (log(l - std::abs(m)) + log(l + std::abs(m) + 1.));
+	}
+
+
+	static bool checklnE(double l, double m, double eps)
+	{
+		double j = (l - std::abs(m)) * (l + std::abs(m) + 1.); 
+		if (j < 0.)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
 		}
 	}
 
@@ -432,17 +499,48 @@ public:
 	static double J(double l, double m, double eps)
 	{
 		double j = ((l+m+delta_m(m))*(l-m-delta_m(m))) / ((2.*l+1.)*(2.*l-1.));
-		if (j < eps)
+		if (std::abs(l) < eps)
+		{
+			return 1.;
+		}
+		else
+		{
+			if (j < eps)
+			{
+				return 0.;
+			}
+			else
+			{
+				return std::sqrt( exp(log(l+m+delta_m(m)) + log(l-m-delta_m(m)) - log(2.*l+1.) - log(2.*l-1.)) );
+			}
+		}
+	}
+
+	static double lnJ(double l, double m, double eps)
+	{
+		if (std::abs(l) < eps)
 		{
 			return 0.;
 		}
 		else
 		{
-			return std::sqrt( exp(log(l+m+delta_m(m)) + log(l-m-delta_m(m)) - log(2.*l+1.) - log(2.*l-1.)) );
+			return 0.5 * (log(l+m+delta_m(m)) + log(l-m-delta_m(m)) - log(2.*l+1.) - log(2.*l-1.) );
 		}
 	}
 
 
+	static bool checklnJ(double l, double m, double eps)
+	{
+		double j = ((l+m+delta_m(m))*(l-m-delta_m(m))) / ((2.*l+1.)*(2.*l-1.));
+		if (j < eps)
+		{	
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
 
 	static double K(double l, double m, double eps)
 	{
@@ -458,6 +556,23 @@ public:
 	}
 
 
+	static double lnK(double l, double m)
+	{
+		return 0.5 * (log(l+m+delta_m(m)+1.) + log(l-m-delta_m(m)+1.)  - log(2.*l+1.) - log(2.*l+3.));
+	}
+
+	static bool checklnK(double l, double m, double eps)
+	{
+		double j = ((l+m+delta_m(m)+1.)*(l-m-delta_m(m)+1.)) / ((2.*l+1.)*(2.*l+3.));
+		if (j < eps)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
 
 	static double K1(int l, int m, int p, int q)
 	{
@@ -590,6 +705,74 @@ public:
 			return 0.0;
 		}
 	}
+
+
+
+
+
+
+
+	static double lnSumK2(int l, int m, int p, int q,double lnsum)
+	{
+		if ((l >= std::abs(m)) && (p >= std::abs(q)))
+		{
+			if ((l+p-m-q) % 2 == 0)
+			{
+				double outerSum = 0.0;
+				double outerSumOld = 0.0;
+				int outerMax = std::floor((l-m)/2.);
+				int innerMax = std::floor((p-q)/2.);
+
+				vector<double> v;
+
+
+				for (int i=0; i<=outerMax; i++)
+				{
+
+					for (int j=0; j<=innerMax; j++)
+					{
+
+					
+						double gmArg = gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.));
+
+						gmArg += gsl_sf_lngamma(p+q+1)-gsl_sf_lngamma(q+j+1)-gsl_sf_lngamma(j+1)-gsl_sf_lngamma(p-q-2*j+1);
+						gmArg += gsl_sf_lngamma(l+m+1)-gsl_sf_lngamma(m+i+1)-gsl_sf_lngamma(i+1)-gsl_sf_lngamma(l-m-2*i+1);
+						gmArg -= log(2) *( m + q + 2 * (i + j));
+
+						double tmp = std::pow(-1,i+j) * exp(gmArg + lnsum);
+						
+						v.push_back(tmp);
+	
+
+					}
+					
+
+
+				}
+
+
+				sort(v.begin(),v.end(),magnitude());
+				
+				for (int idx = 0; idx < v.size(); idx++)
+				{
+					outerSum += v[idx];
+				}		
+				
+				return outerSum;
+			
+			}
+			else
+			{
+		 		return 0.0;	
+			}
+		}
+		else
+		{	
+			return 0.0;
+		}
+	}
+
+
 
 
 
