@@ -246,7 +246,7 @@ public:
 		//cout << "coupling " << coupling << " " <<-I1_1 + I2_1 + J1 + J2 << endl; 
 
 		coupling += (-I1_1 + I2_1 + J1 + J2);
-		
+		cout << I1_1 << " " << I2_1 << " " << J1 << " " << J2 << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 
 		return coupling;
 	}
