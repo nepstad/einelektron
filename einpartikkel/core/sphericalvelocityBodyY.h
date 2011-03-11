@@ -179,7 +179,7 @@ public:
 		/*
 		 * Integral J2 in r1.
 		 */
-	/* 
+	 
 		J_lm = J(l,m,eps);
 		K_lm = K(l,m,eps);
 		E_lm = E(l,m);
@@ -197,13 +197,14 @@ public:
 
 
 
-		I3_1 += dlta_m * E_lm * temp;  
+		J2 = dlta_m * E_lm * temp;  
 	
-	*/
+	
 		/*
 		 * J2 stable
 		 */
 
+	/*
 		dlta_m = delta_m(m);
 
 		bool lnNorm4_ok = checklnLegendreNorm(l-1,m+dlta_m,lp,mp);
@@ -238,15 +239,14 @@ public:
 
 		J2 *= dlta_m * 0.25 * (-dlta1 + dlta2) * std::pow(-1.,0.5 * (mp + std::abs(mp) + m + dlta_m + std::abs(m + dlta_m)));
 
+	*/
 
-
-		//cout << "samme " << J2 << " "  << temp * dlta_m * E_lm << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 		
 		//coupling += (-I1_1 + I2_1 + I3_1);
 		//cout << "coupling " << coupling << " " <<-I1_1 + I2_1 + J1 + J2 << endl; 
 
 		coupling += (-I1_1 + I2_1 + J1 + J2);
-		cout << I1_1 << " " << I2_1 << " " << J1 << " " << J2 << " \t " << l << " " << m << " " << lp << " " << mp << endl;
+		//cout << I1_1 << " " << I2_1 << " " << J1 << " " << J2 << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 
 		return coupling;
 	}
@@ -739,6 +739,8 @@ public:
 						gmArg += gsl_sf_lngamma(l+m+1)-gsl_sf_lngamma(m+i+1)-gsl_sf_lngamma(i+1)-gsl_sf_lngamma(l-m-2*i+1);
 						gmArg -= log(2) *( m + q + 2 * (i + j));
 
+						//cout << "SS " << gmArg << " " <<  lnsum << endl;
+
 						double tmp = std::pow(-1,i+j) * exp(gmArg + lnsum);
 						
 						v.push_back(tmp);
@@ -758,6 +760,7 @@ public:
 					outerSum += v[idx];
 				}		
 				
+				cout << "outer" << outerSum << endl;
 				return outerSum;
 			
 			}
