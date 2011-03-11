@@ -55,9 +55,9 @@ public:
 		/*
 		 * Integral I2 in r1.
 		 */
-		//norms = LegendreNormDouble(l,m,lp,mp);
+		norms = LegendreNormDouble(l,m,lp,mp);
 
-		//temp = M_PI * m * norms * (dlta1 + dlta2); 
+		temp = M_PI * m * norms * (dlta1 + dlta2); 
 		//temp *= K1(lp,std::abs(mp),l,std::abs(m));
 		//I2_1 += temp;
 
@@ -77,6 +77,7 @@ public:
 			I2_1 *= 0.5 * m * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
 		}
 
+		cout << "samme " << I2_1 << " " <<  2 * M_PI * m * norms << " " << l << " " << m << " " << lp << " " << mp << endl;
 
 
 		/*
