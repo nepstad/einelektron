@@ -58,7 +58,7 @@ public:
 		norms = LegendreNormDouble(l,m,lp,mp);
 
 		temp = M_PI * m * norms * (dlta1 + dlta2); 
-		//temp *= K1(lp,std::abs(mp),l,std::abs(m));
+		temp *= K1(lp,std::abs(mp),l,std::abs(m));
 		//I2_1 += temp;
 
 
@@ -68,16 +68,17 @@ public:
 		 */
 
 		double lnNorm = lnLegendreNorm(l,m,lp,mp);
+		bool lnK1_ok = checklnK1(lp,std::abs(mp),l,std::abs(m));
 		double lnK1Int = lnK1(lp,std::abs(mp),l,std::abs(m));
 
-		if (std::abs(lnNorm) > 0)
+		if ((lnK1_ok == true) && (std::abs(lnNorm) > 0.))
 		{
-			I2_1 += exp(lnNorm);
+			I2_1 += exp(lnK1Int + lnNorm);
 			I2_1 *= (dlta1 + dlta2); 
 			I2_1 *= 0.5 * m * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
 		}
 
-		cout << "samme " << I2_1 << " " <<  2 * M_PI * m * norms << " " << l << " " << m << " " << lp << " " << mp << endl;
+		cout << "samme " << I2_1 << " " << temp  << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 
 
 		/*
@@ -327,6 +328,15 @@ public:
 
 	static double lnK1(int l, int m, int p, int q)
 	{
+		int nu = std::min(l,p);
+		int mu = std::min(m,q);
+	
+		return gsl_sf_lnfact(nu+mu) - gsl_sf_lnfact(nu-mu);
+	}
+
+
+	static bool checklnK1(int l, int m, int p, int q)
+	{
 		int c1 = l-p;
 		int c2 = m-q;
 		int nu = std::min(l,p);
@@ -338,24 +348,23 @@ public:
 			{
 				if (((c1 < 0) && (c2 < 0)) || ((c1 > 0) && (c2 > 0)))
 				{
-					return gsl_sf_lnfact(nu+mu) - gsl_sf_lnfact(nu-mu);
+					return true;
 				}
 				else
 				{
-					return 0.0;
+					return false;
 				}
 			}
 			else
 			{
-				return 0.;
+				return false;
 			}
 		}
 		else
 		{
-			return 0.0;
+			return false;
 		}
 	}
-
 
 
 
