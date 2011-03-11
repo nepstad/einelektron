@@ -244,10 +244,9 @@ public:
 		 
 			if ((lnNorm5_ok == true) && (lnK_ok == true))
 			{
-				//double lnNorm5 = lnLegendreNorm(l+1,m+dlta_m,lp,mp);
 				//double lnKconst = lnK(l,m);
 
-				vector<double> lnNorm5 = lnLegendreNormVect(l-1,m+dlta_m,lp,mp);
+				vector<double> lnNorm5 = lnLegendreNormVect(l+1,m+dlta_m,lp,mp);
 				vector<double> lnKconst = lnKvect(l,m);
 
 				vector<double> u;
@@ -259,7 +258,6 @@ public:
 				v.reserve(u.size() + lnEconst.size());
 				v.insert(v.end(), u.begin(), u.end()); 
 				v.insert(v.end(), lnEconst.begin(), lnEconst.end());
-
 
 
 				//J2 += lnSumK2(l+1,std::abs(m+dlta_m),lp,std::abs(mp),lnNorm5 + lnKconst + lnEconst);
@@ -865,11 +863,8 @@ public:
 						tmp *= std::pow(-1,i+j);
 
 						v.push_back(tmp);
-	
 
 					}
-					
-
 
 				}
 
