@@ -173,9 +173,9 @@ public:
 	{
 		if ( (std::abs(m)<=l && l>=0) && (std::abs(mp)<=lp && lp>=0))
 		{
-			double tmp = log(2 * l + 1.) + log(2 * lp + 1.); 
-			tmp += gsl_sf_lngamma(l - std::abs(m)) + gsl_sf_lngamma(lp - std::abs(mp));
-			tmp -= gsl_sf_lngamma(l + std::abs(m)) + gsl_sf_lngamma(lp - std::abs(mp));
+			double tmp = log(2 * l + 1.) + log(2 * lp + 1.);
+			tmp += gsl_sf_lnfact(l - std::abs(m)) + gsl_sf_lnfact(lp - std::abs(mp));
+			tmp -= gsl_sf_lnfact(l + std::abs(m)) + gsl_sf_lnfact(lp - std::abs(mp));
 			tmp *= 0.5;
 			return tmp;
 		}
