@@ -67,13 +67,15 @@ public:
 		 * I2 stabile
 		 */
 
-		double lnNorm = lnLegendreNorm(l,m,lp,mp);
+		bool lnNorm_ok = checklnLegendreNorm(l,m,lp,mp);
 		bool lnK1_ok = checklnK1(lp,std::abs(mp),l,std::abs(m));
-		double lnK1Int = lnK1(lp,std::abs(mp),l,std::abs(m));
 
-		if ((lnK1_ok == true) && (std::abs(lnNorm) > 0.))
+		if ((lnNorm_ok == true) && (lnK1_ok == true))
 		{
-			I2_1 += exp(lnK1Int + lnNorm);
+			double lnNorm = lnLegendreNorm(l,m,lp,mp);
+			double lnK1Int = lnK1(lp,std::abs(mp),l,std::abs(m));
+
+			I2_1 += exp(lnNorm + lnK1Int);
 			I2_1 *= (dlta1 + dlta2); 
 			I2_1 *= 0.5 * m * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
 		}
@@ -171,19 +173,25 @@ public:
 
 	static double lnLegendreNorm(double l, double m, double lp, double mp)
 	{
+		double tmp = log(2 * l + 1.) + log(2 * lp + 1.);
+		tmp += gsl_sf_lnfact(l - std::abs(m)) + gsl_sf_lnfact(lp - std::abs(mp));
+		tmp -= gsl_sf_lnfact(l + std::abs(m)) + gsl_sf_lnfact(lp + std::abs(mp));
+		tmp *= 0.5;
+		return tmp;
+	}
+
+	static bool checklnLegendreNorm(double l, double m, double lp, double mp)
+	{
 		if ( (std::abs(m)<=l && l>=0) && (std::abs(mp)<=lp && lp>=0))
 		{
-			double tmp = log(2 * l + 1.) + log(2 * lp + 1.);
-			tmp += gsl_sf_lnfact(l - std::abs(m)) + gsl_sf_lnfact(lp - std::abs(mp));
-			tmp -= gsl_sf_lnfact(l + std::abs(m)) + gsl_sf_lnfact(lp + std::abs(mp));
-			tmp *= 0.5;
-			return tmp;
+			return true;
 		}
 		else
 		{
-			return 0.;
-		}
+			return false;
+		}	
 	}
+
 
 	
 
