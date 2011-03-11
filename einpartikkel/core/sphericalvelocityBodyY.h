@@ -55,11 +55,30 @@ public:
 		/*
 		 * Integral I2 in r1.
 		 */
-		norms = LegendreNormDouble(l,m,lp,mp);
+		//norms = LegendreNormDouble(l,m,lp,mp);
 
-		temp = M_PI * m * norms * (dlta1 + dlta2); 
-		temp *= K1(lp,std::abs(mp),l,std::abs(m));
-		I2_1 += temp;
+		//temp = M_PI * m * norms * (dlta1 + dlta2); 
+		//temp *= K1(lp,std::abs(mp),l,std::abs(m));
+		//I2_1 += temp;
+
+
+
+		/*
+		 * I2 stabile
+		 */
+
+		double lnNorm = lnLegendreNorm(l,m,lp,mp);
+		double lnK1Int = lnK1(lp,std::abs(mp),l,std::abs(m));
+
+		if (std::abs(lnNorm + lnK1Int) > 0)
+		{
+			I2_1 += exp(lnNorm + lnK1Int);
+			I2_1 *= (dlta1 + dlta2); 
+			I2_1 *= 0.5 * m * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
+		}
+
+
+
 
 		/*
 		 * Integral J1 in r1.
@@ -150,6 +169,23 @@ public:
 		}
 	}
 
+	static double lnLegendreNorm(double l, double m, double lp, double mp)
+	{
+		if ( (std::abs(m)<=l && l>=0) && (std::abs(mp)<=lp && lp>=0))
+		{
+			double tmp = log(2 * l + 1.) + log(2 * lp + 1.); 
+			tmp += gsl_sf_lngamma(l - std::abs(m)) + gsl_sf_lngamma(lp - std::abs(mp));
+			tmp -= gsl_sf_lngamma(l + std::abs(m)) + gsl_sf_lngamma(lp - std::abs(mp));
+			tmp *= 0.5;
+			return tmp;
+		}
+		else
+		{
+			return 0.;
+		}
+	}
+
+	
 
 
 	
@@ -193,7 +229,6 @@ public:
 		}
 		else
 		{
-			//return ((l+m)*(l-m)) / ((2.*l+1.)*(2.*l-1.));
 			return exp(log(l+m) + log(l-m) - log(2*l+1) - log(2*l-1));
 		}
 	}
@@ -207,7 +242,6 @@ public:
 		}
 		else
 		{
-			//return ((l+m+1.)*(l-m+1.)) / ((2.*l+1.)*(2.*l+3.)) ;
 			return exp( log(l+m+1) + log(l-m+1) - log(2*l+1) - log(2*l+3)) ;
 		}
 	}
@@ -221,7 +255,6 @@ public:
 		}
 		else
 		{
-			//return std::sqrt( ((l+m+1.)*(l-m+1.)*(l+m+2.)*(l-m+2.)) / ((2.*l+1.)*std::pow(2.*l+3.,2)*(2.*l+5.)) );
 			return std::sqrt( exp( log(l+m+1) + log(l-m+1) + log(l+m+2) + log(l-m+2) - log(2.*l+1.) - 2 * log(2.*l+3) - log(2.*l+5)) );
 		}
 	}
@@ -241,7 +274,6 @@ public:
 		}
 		else
 		{
-			//return std::sqrt( ((l+m+delta_m(m))*(l-m-delta_m(m))) / ((2.*l+1.)*(2.*l-1.)) );
 			return std::sqrt( exp(log(l+m+delta_m(m)) + log(l-m-delta_m(m)) - log(2.*l+1.) - log(2.*l-1.)) );
 		}
 	}
@@ -257,7 +289,6 @@ public:
 		}
 		else
 		{
-			//return std::sqrt( ((l+m+delta_m(m)+1.)*(l-m-delta_m(m)+1.)) / ((2.*l+1.)*(2.*l+3.)) );
 			return std::sqrt(exp(log(l+m+delta_m(m)+1.) + log(l-m-delta_m(m)+1.)  - log(2.*l+1.) - log(2.*l+3.)));
 		}
 	}
@@ -295,60 +326,38 @@ public:
 		}
 	}
 
-
-	static double K2OLD(int l, int m, int p, int q)
+	static double lnK1(int l, int m, int p, int q)
 	{
+		int c1 = l-p;
+		int c2 = m-q;
+		int nu = std::min(l,p);
+		int mu = std::min(m,q);
+		
 		if ((l >= std::abs(m)) && (p >= std::abs(q)))
 		{
-			if ((l+p-m-q) % 2 == 0)
+			if ((l+p) % 2==1)
 			{
-				double outerSum = 0.0;
-				double outerSumOld = 0.0;
-				int outerMax = std::floor((l-m)/2.);
-				int innerMax = std::floor((p-q)/2.);
-
-				vector<double> v;
-
-				for (int i=0; i<=outerMax; i++)
+				if (((c1 < 0) && (c2 < 0)) || ((c1 > 0) && (c2 > 0)))
 				{
-					double innerSum = .0;
-					double C_lmi = Cconstant(l,m,i);
-
-					for (int j=0; j<=innerMax; j++)
-					{
-						double tmp;
-						innerSum += Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
-						tmp = Cconstant(p,q,j) * C_lmi * exp(gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.)));
-						v.push_back(tmp);
-					}
-					outerSumOld += innerSum; // * Cconstant(l,m,i); 
+					return gsl_sf_lnfact(nu+mu) - gsl_sf_lnfact(nu-mu);
 				}
-
-
-				sort(v.begin(),v.end(),magnitude());
-				
-				for (int idx = 0; idx < v.size(); idx++)
+				else
 				{
-					cout.precision(15);
-					outerSum += v[idx];
-					//cout << "T " << outerSum << " " << v[idx] << endl; 
-				}		
-				//cout.precision(15);
-				//cout << outerSum << " " << outerSumOld << endl;
-				
-				return outerSum;
-			
+					return 0.0;
+				}
 			}
 			else
 			{
-		 		return 0.0;	
+				return 0.;
 			}
 		}
 		else
-		{	
+		{
 			return 0.0;
 		}
 	}
+
+
 
 
 	static double K2(int l, int m, int p, int q)
