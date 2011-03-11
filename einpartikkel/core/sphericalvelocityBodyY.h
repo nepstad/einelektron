@@ -70,13 +70,12 @@ public:
 		double lnNorm = lnLegendreNorm(l,m,lp,mp);
 		double lnK1Int = lnK1(lp,std::abs(mp),l,std::abs(m));
 
-		if (std::abs(lnNorm + lnK1Int) > 0)
+		if (std::abs(lnNorm) > 0)
 		{
-			I2_1 += exp(lnNorm + lnK1Int);
+			I2_1 += exp(lnNorm);
 			I2_1 *= (dlta1 + dlta2); 
 			I2_1 *= 0.5 * m * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
 		}
-
 
 
 
@@ -123,7 +122,6 @@ public:
 
 		I3_1 += dlta_m * E_lm * temp;  
 		
-		cout <<"G " << -I1_1 << " " << I2_1 << " " << I3_1 <<" " << -I1_1 + I2_1 + I3_1 << endl;
 		
 		coupling += (-I1_1 + I2_1 + I3_1);
 		
@@ -175,7 +173,7 @@ public:
 		{
 			double tmp = log(2 * l + 1.) + log(2 * lp + 1.);
 			tmp += gsl_sf_lnfact(l - std::abs(m)) + gsl_sf_lnfact(lp - std::abs(mp));
-			tmp -= gsl_sf_lnfact(l + std::abs(m)) + gsl_sf_lnfact(lp - std::abs(mp));
+			tmp -= gsl_sf_lnfact(l + std::abs(m)) + gsl_sf_lnfact(lp + std::abs(mp));
 			tmp *= 0.5;
 			return tmp;
 		}
