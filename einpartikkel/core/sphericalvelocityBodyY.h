@@ -179,7 +179,7 @@ public:
 		/*
 		 * Integral J2 in r1.
 		 */
-	 /*
+	 
 		J_lm = J(l,m,eps);
 		K_lm = K(l,m,eps);
 		E_lm = E(l,m);
@@ -197,8 +197,8 @@ public:
 
 
 
-		J2 = dlta_m * E_lm * temp;  
-	*/	
+		double JJ2 = dlta_m * E_lm * temp;  
+		
 	
 		/*
 		 * J2 stable
@@ -223,10 +223,18 @@ public:
 			if ((lnNorm4_ok == true) && (lnJ_ok == true))
 			{
 				//double lnNorm4 = lnLegendreNorm(l-1,m+dlta_m,lp,mp);
-				//double lnJconst = lnJ(l,m,eps);
+				//cout << "tt" <<  lnJ(l,m,eps)+lnLegendreNorm(l-1,m+dlta_m,lp,mp)<< endl;
 
 				vector<double> lnNorm4 = lnLegendreNormVect(l-1,m+dlta_m,lp,mp);
 				vector<double> lnJconst = lnJvect(l,m,eps);
+
+				//double p = 0;
+				//for (int idx = 0; idx < lnJconst.size(); idx++)
+				//{
+				//	p += lnJconst[idx];
+				//}	
+
+				//cout << "ss" << p << endl;
 
 				vector<double> t;
 				t.reserve(lnNorm4.size() + lnJconst.size());
@@ -244,10 +252,18 @@ public:
 		 
 			if ((lnNorm5_ok == true) && (lnK_ok == true))
 			{
-				//double lnKconst = lnK(l,m);
+				//cout << "tt" << lnK(l,m) +  lnLegendreNorm(l+1,m+dlta_m,lp,mp) + lnE(l,m) << endl;
 
 				vector<double> lnNorm5 = lnLegendreNormVect(l+1,m+dlta_m,lp,mp);
 				vector<double> lnKconst = lnKvect(l,m);
+
+				//double s = 0;
+				//for (int idx = 0; idx < lnKconst.size(); idx++)
+				//{
+				//	s += lnKconst[idx];
+				//}	
+
+				//cout << "ss" << s << endl;
 
 				vector<double> u;
 				u.reserve(lnNorm5.size() + lnKconst.size());
@@ -259,6 +275,13 @@ public:
 				v.insert(v.end(), u.begin(), u.end()); 
 				v.insert(v.end(), lnEconst.begin(), lnEconst.end());
 
+				double s = 0;
+				for (int idx = 0; idx < v.size(); idx++)
+				{
+					s += v[idx];
+				}	
+
+				//cout << "--" << s << endl;
 
 				//J2 += lnSumK2(l+1,std::abs(m+dlta_m),lp,std::abs(mp),lnNorm5 + lnKconst + lnEconst);
 				J2 += lnSumK2(l+1,std::abs(m+dlta_m),lp,std::abs(mp),v);
@@ -274,7 +297,7 @@ public:
 		//cout << "coupling " << coupling << " " <<-I1_1 + I2_1 + J1 + J2 << endl; 
 
 		coupling += (-I1_1 + I2_1 + J1 + J2);
-		//cout << I1_1 << " " << I2_1 << " " << J1 << " " << J2 << " \t " << l << " " << m << " " << lp << " " << mp << endl;
+		//cout << "fff" << " " << J2 << " " << JJ2 << " " << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 
 		return coupling;
 	}
@@ -849,20 +872,37 @@ public:
 						}		
 
 
-						//double gmArg = gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.));
+						double gmArg = gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.));
 
 
-						//gmArg += gsl_sf_lngamma(p+q+1)-gsl_sf_lngamma(q+j+1)-gsl_sf_lngamma(j+1)-gsl_sf_lngamma(p-q-2*j+1);
-						//gmArg += gsl_sf_lngamma(l+m+1)-gsl_sf_lngamma(m+i+1)-gsl_sf_lngamma(i+1)-gsl_sf_lngamma(l-m-2*i+1);
-						//gmArg -= log(2) *( m + q + 2 * (i + j));
+						gmArg += gsl_sf_lngamma(p+q+1)-gsl_sf_lngamma(q+j+1)-gsl_sf_lngamma(j+1)-gsl_sf_lngamma(p-q-2*j+1);
+						gmArg += gsl_sf_lngamma(l+m+1)-gsl_sf_lngamma(m+i+1)-gsl_sf_lngamma(i+1)-gsl_sf_lngamma(l-m-2*i+1);
+						gmArg -= log(2) *( m + q + 2 * (i + j));
 
-						//cout << "SS " << gmArg << " " <<  lnsum << endl;
+						//cout << "SS " << gmArg << endl;
+
+						double tamp = 0;
+						for (int idx = 0; idx < lnsum.size(); idx++)
+						{
+							tamp += lnsum[idx];
+						}
+
+						double tame = 0;
+						for (int idx = 0; idx < w.size(); idx++)
+						{
+							tame += w[idx];
+						}
+
+						//cout << "AA" << tamp << endl; 
+						//cout << "BA" << tame << endl; 
 
 						//double tmp = std::pow(-1,i+j) * exp(gmArg + lnsum);
-						
-						tmp *= std::pow(-1,i+j);
 
-						v.push_back(tmp);
+						double tmp1 = exp(tmp); 
+						tmp1 *= std::pow(-1,i+j);
+
+
+						v.push_back(tmp1);
 
 					}
 
@@ -876,7 +916,7 @@ public:
 					outerSum += v[idx];
 				}		
 				
-				cout << "outer" << outerSum << endl;
+				//cout << "outer" << outerSum << endl;
 				return outerSum;
 			
 			}
