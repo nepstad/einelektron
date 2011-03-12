@@ -73,13 +73,41 @@ public:
 
 		if ((lnNorm_ok == true) && (lnK1_ok == true))
 		{
-			double lnNorm = lnLegendreNorm(l,m,lp,mp);
-			double lnK1Int = lnK1(lp,std::abs(mp),l,std::abs(m));
+			//double lnNorm = lnLegendreNorm(l,m,lp,mp);
+			//double lnK1Int = lnK1(lp,std::abs(mp),l,std::abs(m));
 
-			I2_1 += exp(lnNorm + lnK1Int);
+			vector<double> lnNorm = lnLegendreNormVect(l,m,lp,mp);
+			vector<double> lnK1Int = lnK1vect(lp,std::abs(mp),l,std::abs(m));
+
+			vector<double> s;
+			s.reserve(lnNorm.size() + lnK1Int.size());
+			s.insert(s.end(), lnNorm.begin(), lnNorm.end()); 
+			s.insert(s.end(), lnK1Int.begin(), lnK1Int.end());
+
+			sort(s.begin(),s.end(),magnitude());
+
+			double pp = 0;
+			for (int idx = 0; idx < s.size(); idx++)
+			{
+				pp += s[idx];
+			}	
+
+			//I2_1 += exp(lnNorm + lnK1Int);
+			I2_1 += exp(pp);
 			I2_1 *= (dlta1 + dlta2); 
 			I2_1 *= 0.5 * m * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
 		}
+
+
+
+
+
+
+
+
+
+
+
 
 		//cout << "samme " << I2_1 << " " << temp  << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 
@@ -87,7 +115,7 @@ public:
 		/*
 		 * Integral J1 in r1.
 		 */
-	/*
+	/*	
 		F_lm = F(l,m,eps);
 		G_lm = G(l,m,eps);
 		H_lm = H(l,m,eps);
@@ -103,9 +131,9 @@ public:
 		temp *= M_PI * (-dlta1 + dlta2); 
 
 
-		I3_1 += std::abs(m) * temp;
-
+		double JJ1 = std::abs(m) * temp;
 	*/
+	
 		/*
 		 * J1 stable
 		 */
@@ -122,36 +150,105 @@ public:
 		bool lnK1Int_2_ok = checklnK1(lp,std::abs(mp),l,std::abs(m));
 		bool lnK1Int_3_ok = checklnK1(lp,std::abs(mp),l+2,std::abs(m));
 
+		double p = 0;
 
 		if ((lnNorm1_ok == true) && (lnK1Int_1_ok))
 		{
 			if (lnF_ok == true)
 			{
-				double lnNorm1 = lnLegendreNorm(l-2,m,lp,mp);
-				double lnK1Int_1 = lnK1(lp,std::abs(mp),l-2,std::abs(m));
-				double lnFconst = lnF(l,m);
+				//double lnNorm1 = lnLegendreNorm(l-2,m,lp,mp);
+				//double lnK1Int_1 = lnK1(lp,std::abs(mp),l-2,std::abs(m));
+				//double lnFconst = lnF(l,m);
 
-				J1 += exp(lnNorm1 + lnK1Int_1 + lnFconst);
+				vector<double> lnNorm1 = lnLegendreNormVect(l-2,m,lp,mp);
+				vector<double> lnK1Int_1 = lnK1vect(lp,std::abs(mp),l-2,std::abs(m));
+				vector<double> lnFconst = lnFvect(l,m);
+
+				vector<double> a;
+				a.reserve(lnNorm1.size() + lnK1Int_1.size());
+				a.insert(a.end(), lnNorm1.begin(), lnNorm1.end()); 
+				a.insert(a.end(), lnK1Int_1.begin(), lnK1Int_1.end());
+
+				vector<double> b;
+				b.reserve(a.size() + lnFconst.size());
+				b.insert(b.end(), a.begin(), a.end()); 
+				b.insert(b.end(), lnFconst.begin(), lnFconst.end());
+
+				sort(b.begin(),b.end(),magnitude());
+
+				p = 0;
+				for (int idx = 0; idx < b.size(); idx++)
+				{
+					p += b[idx];
+				}	
+				
+				J1 += exp(p);
+
+				//J1 += exp(lnNorm1 + lnK1Int_1 + lnFconst);
 			}
 		}
 
 		if ((lnNorm2_ok == true) && (lnK1Int_2_ok == true))
 		{
-			double lnNorm2 = lnLegendreNorm(l,m,lp,mp);
-			double lnK1Int_2 = lnK1(lp,std::abs(mp),l,std::abs(m));
+			//double lnNorm2 = lnLegendreNorm(l,m,lp,mp);
+			//double lnK1Int_2 = lnK1(lp,std::abs(mp),l,std::abs(m));
+
+			vector<double> lnNorm2 = lnLegendreNormVect(l,m,lp,mp);
+			vector<double> lnK1Int_2 = lnK1vect(lp,std::abs(mp),l,std::abs(m));
+
+			vector<double> c;
+			c.reserve(lnNorm2.size() + lnK1Int_2.size());
+			c.insert(c.end(), lnNorm2.begin(), lnNorm2.end()); 
+			c.insert(c.end(), lnK1Int_2.begin(), lnK1Int_2.end());
+
 
 			if (lnG_ok == true)
 			{
-				double lnGconst = lnG(l,m);
+				//double lnGconst = lnG(l,m);
 
-				J1 += exp(lnNorm2 + lnK1Int_2 + lnGconst);
+				vector<double> lnGconst = lnGvect(l,m);
+
+				vector<double> d;
+				d.reserve(c.size() + lnGconst.size());
+				d.insert(d.end(), c.begin(), c.end()); 
+				d.insert(d.end(), lnGconst.begin(), lnGconst.end());
+
+				sort(d.begin(),d.end(),magnitude());
+
+				p = 0;
+				for (int idx = 0; idx < d.size(); idx++)
+				{
+					p += d[idx];
+				}	
+				
+				J1 += exp(p);
+
+				//J1 += exp(lnNorm2 + lnK1Int_2 + lnGconst);
 			}
 
 			if (lnH_ok == true)
 			{
-				double lnHconst = lnH(l,m);
+				//double lnHconst = lnH(l,m);
 
-				J1 += exp(lnNorm2 + lnK1Int_2 + lnHconst);
+				vector<double> lnHconst = lnHvect(l,m);
+
+				vector<double> f;
+				f.reserve(c.size() + lnHconst.size());
+				f.insert(f.end(), c.begin(), c.end()); 
+				f.insert(f.end(), lnHconst.begin(), lnHconst.end());
+
+				sort(f.begin(),f.end(),magnitude());
+
+				p = 0;
+				for (int idx = 0; idx < f.size(); idx++)
+				{
+					p += f[idx];
+				}	
+				
+				J1 += exp(p);
+
+
+				//J1 += exp(lnNorm2 + lnK1Int_2 + lnHconst);
 			}
 		}
 
@@ -159,11 +256,38 @@ public:
 		{
 			if (lnI_ok == true)
 			{
-				double lnNorm3 = lnLegendreNorm(l+2,m,lp,mp);
-				double lnK1Int_3 = lnK1(lp,std::abs(mp),l+2,std::abs(m));
-				double lnIconst = lnI(l,m);
+				//double lnNorm3 = lnLegendreNorm(l+2,m,lp,mp);
+				//double lnK1Int_3 = lnK1(lp,std::abs(mp),l+2,std::abs(m));
+				//double lnIconst = lnI(l,m);
 
-				J1 += exp(lnNorm3 + lnK1Int_3 + lnIconst);
+				vector<double> lnNorm3 = lnLegendreNormVect(l+2,m,lp,mp);
+				vector<double> lnK1Int_3 = lnK1vect(lp,std::abs(mp),l+2,std::abs(m));
+				vector<double> lnIconst = lnIvect(l,m);
+
+				vector<double> g;
+				g.reserve(lnNorm3.size() + lnK1Int_3.size());
+				g.insert(g.end(), lnNorm3.begin(), lnNorm3.end()); 
+				g.insert(g.end(), lnK1Int_3.begin(), lnK1Int_3.end());
+
+				vector<double> h;
+				h.reserve(g.size() + lnIconst.size());
+				h.insert(h.end(), g.begin(), g.end()); 
+				h.insert(h.end(), lnIconst.begin(), lnIconst.end());
+
+
+				sort(h.begin(),h.end(),magnitude());
+
+				p = 0;
+				for (int idx = 0; idx < h.size(); idx++)
+				{
+					p += h[idx];
+				}	
+				
+				J1 += exp(p);
+
+
+
+				//J1 += exp(lnNorm3 + lnK1Int_3 + lnIconst);
 			}
 		}
 
@@ -172,14 +296,14 @@ public:
 		J1 *= std::abs(m) * 0.5 * pow(-1,0.5 * (m + mp + std::abs(m) + std::abs(mp)));
 
 
-		//cout << "samme " << J1 << " "  << std::abs(m) * temp << " \t " << l << " " << m << " " << lp << " " << mp << endl;
+		//cout << "samme " << J1 << " "  << JJ1  << " \t " << l << " " << m << " " << lp << " " << mp << endl;
 
 
 
 		/*
 		 * Integral J2 in r1.
 		 */
-	 
+	/*	 
 		J_lm = J(l,m,eps);
 		K_lm = K(l,m,eps);
 		E_lm = E(l,m);
@@ -198,7 +322,7 @@ public:
 
 
 		double JJ2 = dlta_m * E_lm * temp;  
-		
+	*/	
 	
 		/*
 		 * J2 stable
@@ -252,7 +376,6 @@ public:
 		 
 			if ((lnNorm5_ok == true) && (lnK_ok == true))
 			{
-				//cout << "tt" << lnK(l,m) +  lnLegendreNorm(l+1,m+dlta_m,lp,mp) + lnE(l,m) << endl;
 
 				vector<double> lnNorm5 = lnLegendreNormVect(l+1,m+dlta_m,lp,mp);
 				vector<double> lnKconst = lnKvect(l,m);
@@ -448,6 +571,21 @@ public:
 		return 0.5 * (log(l+m) + log(l-m) + log(l+m-1) + log(l-m-1) - log(2.*l+1.) - 2 * log(2.*l-1.) - log(2.*l-3.));
 	}
 
+	static vector<double> lnFvect(double l, double m)
+	{
+		vector<double> v;
+		v.push_back(0.5 * log(l+m));
+		v.push_back(0.5 * log(l-m));
+		v.push_back(0.5 * log(l+m-1));
+		v.push_back(0.5 * log(l-m-1));
+		v.push_back((-0.5) * log(2.*l+1.));
+		v.push_back((-1.) * log(2.*l-1.));
+		v.push_back((-0.5) * log(2.*l-3.));
+		
+		return v;
+	}
+
+
 
 	static bool checklnF(double l, double m, double eps)
 	{
@@ -480,6 +618,17 @@ public:
 	static double lnG(double l, double m)
 	{
 		return log(l+m) + log(l-m) - log(2*l+1) - log(2*l-1);
+	}
+
+	static vector<double> lnGvect(double l, double m)
+	{
+		vector<double> v;
+		v.push_back(log(l+m));
+		v.push_back(log(l-m));
+		v.push_back((-1.) * log(2*l+1));
+		v.push_back((-1.) * log(2*l-1));
+
+		return v;
 	}
 
 
@@ -517,6 +666,18 @@ public:
 	}
 
 
+	static vector<double> lnHvect(double l, double m)
+	{
+		vector<double> v;
+		v.push_back(log(l+m+1));
+		v.push_back(log(l-m+1));
+		v.push_back((-1.) * log(2*l+1));
+		v.push_back((-1.) * log(2*l+3));
+
+		return v;
+	}
+
+
 	static bool checklnH(double l, double m, double eps)
 	{
 		double j = ((l+m+1.)*(l-m+1.)) / ((2.*l+1.)*(2.*l+3.));
@@ -549,6 +710,20 @@ public:
 	{
 
 		return 0.5 * (  log(l+m+1) + log(l-m+1) + log(l+m+2) + log(l-m+2) - log(2.*l+1.) - 2 * log(2.*l+3) - log(2.*l+5));
+	}
+
+
+	static vector<double> lnIvect(double l, double m)
+	{
+		vector<double> v;
+		v.push_back(0.5 * log(l+m+1));
+		v.push_back(0.5 * log(l-m+1));
+		v.push_back(0.5 * log(l+m+2));
+		v.push_back(0.5 * log(l-m+2));
+		v.push_back((-0.5) * log(2.*l+1.));
+		v.push_back((-1.) * log(2.*l+3));
+		v.push_back((-0.5) * log(2.*l+5));
+		return v;
 	}
 
 
@@ -720,6 +895,18 @@ public:
 		int mu = std::min(m,q);
 	
 		return gsl_sf_lnfact(nu+mu) - gsl_sf_lnfact(nu-mu);
+	}
+
+
+	static vector<double> lnK1vect(int l, int m, int p, int q)
+	{
+		int nu = std::min(l,p);
+		int mu = std::min(m,q);
+	
+		vector<double> v;
+		v.push_back(gsl_sf_lnfact(nu+mu));
+		v.push_back((-1.)*gsl_sf_lnfact(nu-mu));
+		return v;
 	}
 
 
