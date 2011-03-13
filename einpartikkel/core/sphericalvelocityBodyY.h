@@ -14,6 +14,9 @@ public:
 	static double sphericalvelocityBodyY(int l, int m, int lp, int mp)	
 	{
 
+		cout.precision(15);
+		cout <<"GSL " << gsl_sf_lngamma(113.5) << " " << gsl_sf_lnfact(113) << endl;
+
 		double eps = std::pow(10.,-15);
 
 		//SphericalBasis::ClebschGordan cg;
@@ -1056,6 +1059,7 @@ public:
 						for (int idx = 0; idx < u.size(); idx++)
 						{
 							tmp += u[idx];
+							cout << "HHHH" << u[idx] << endl;
 						}		
 
 
@@ -1085,6 +1089,7 @@ public:
 
 						//double tmp = std::pow(-1,i+j) * exp(gmArg + lnsum);
 
+						cout << "----------" << endl;
 						double tmp1 = exp(tmp); 
 						tmp1 *= std::pow(-1,i+j);
 
