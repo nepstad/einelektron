@@ -1,7 +1,9 @@
-#define numDigitsPrecision1 50
-
 #include "sphericalbase.h"
+
+#ifdef USE_ARPREC
+#define numDigitsPrecision1 50
 #include <arprec/mp_real.h>
+#endif
 
 #include "sphericalvelocityBodyXY.h"
 
@@ -76,6 +78,7 @@ public:
 		blitz::TinyVector<int, Rank> index;
 		data = 0;
 
+		#ifdef USE_ARPREC
 		//Arbitrary precision library.
 		//Initialization should be set to desired precision plus two
 		mp::mp_init(numDigitsPrecision1 + 2); 
@@ -107,6 +110,8 @@ public:
 		//Setup Log-Gamma 
 		vector<mp_real> v;
 		v = velocityHelperXY::genLogGamma(lmax+1);
+		#endif
+
 
 		for (int angIndex=0; angIndex<angCount; angIndex++)
 		{
@@ -130,8 +135,12 @@ public:
 			if (std::abs(m - mp) != 1) continue;
 			if (std::abs(l - lp) != 1) continue;
 
+			#ifdef USE_ARPREC
 			double coupling =  velocityHelperXY::sphericalvelocityBodyXY(lp,mp,l,m,v,false);
-
+			mp::mp_finalize();
+			#else
+			double coupling =  velocityHelperXY::sphericalvelocityBodyXY(lp,mp,l,m,false);
+			#endif
 
 			for (int ri=0; ri<rCount; ri++)
 			{

@@ -1,6 +1,9 @@
-#define numDigitsPrecision1 50
 #include "sphericalbase.h"
+
+#ifdef USE_ARPREC
+#define numDigitsPrecision1 50
 #include <arprec/mp_real.h>
+#endif
 
 #include "sphericalvelocityBodyXY.h"
 
@@ -53,6 +56,7 @@ public:
 			return BasisPairList();
 	}
 
+
 	virtual void UpdatePotentialData(typename blitz::Array<cplx, Rank> data, typename Wavefunction<Rank>::Ptr psi, cplx timeStep, double curTime)
 	{
 		typedef CombinedRepresentation<Rank> CmbRepr;
@@ -75,14 +79,14 @@ public:
 		blitz::TinyVector<int, Rank> index;
 		data = 0;
 
+		#ifdef USE_ARPREC
 		//Arbitrary precision library.
 		//Initialization should be set to desired precision plus two
 		mp::mp_init(numDigitsPrecision1 + 2); 
 		mp::mpsetprec(numDigitsPrecision1 ); 
 		mp::mpsetoutputprec(numDigitsPrecision1 ); 
 		cout.precision(numDigitsPrecision1 ) ; 
-
-
+		
 		//Find lmax
 		int lmax = 0;
 		for (int angIndex=0; angIndex<angCount; angIndex++)
@@ -106,7 +110,7 @@ public:
 		//Setup Log-Gamma 
 		vector<mp_real> v;
 		v = velocityHelperXY::genLogGamma(lmax+1);
-
+		#endif
 
 		for (int angIndex=0; angIndex<angCount; angIndex++)
 		{
@@ -130,7 +134,12 @@ public:
 			if (std::abs(m - mp) != 1) continue;
 			if (std::abs(l - lp) != 1) continue;
 
+			#ifdef USE_ARPREC
 			double coupling = velocityHelperXY::sphericalvelocityBodyXY(lp,mp,l,m,v,true);
+			mp::mp_finalize();
+			#else
+			double coupling = velocityHelperXY::sphericalvelocityBodyXY(lp,mp,l,m,true);
+			#endif
 
 			for (int ri=0; ri<rCount; ri++)
 			{

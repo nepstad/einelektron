@@ -1,28 +1,34 @@
 #ifndef SPHERICALVELOCITYYBODYXY_H
 #define SPHERICALVELOCITYYBODYXY_H
-#define numDigitsPrecision1 50
 
+#ifdef USE_ARPREC
+#define numDigitsPrecision1 50
+#include <arprec/mp_real.h>
+#endif
 
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_coupling.h>
 #include "sphericalbase.h"
 
 
-#include <arprec/mp_real.h>
 
 class velocityHelperXY
 {
 public:
+	#ifdef USE_ARPREC
 	static double sphericalvelocityBodyXY(int l, int m, int lp, int mp,vector<mp_real> vv, bool ImX)	
+	#else
+	static double sphericalvelocityBodyXY(int l, int m, int lp, int mp, bool ImX)	
+	#endif
 	{
-
+		#ifdef USE_ARPREC
 		// Arbitrary precision library.
 		// Initialization should be set to desired precision plus two
 		mp::mp_init(numDigitsPrecision1 + 2); 
 		mp::mpsetprec(numDigitsPrecision1 ); 
 		mp::mpsetoutputprec(numDigitsPrecision1 ); 
 		cout.precision(numDigitsPrecision1 ) ; 
-
+		#endif
 
 		// Define the "eps"; used in zero check.
 		double eps = std::pow(10.,-15);
@@ -214,7 +220,11 @@ public:
 
 				vector<double> s = joinThreeVectors(lnNorm4,lnJconst,lnEconst);
 
+				#ifdef USE_ARPREC
 				J2 += lnSumK2(l-1,std::abs(m+dlta_m),lp,std::abs(mp),s,vv);
+				#else
+				J2 += lnSumK2(l-1,std::abs(m+dlta_m),lp,std::abs(mp),s);
+				#endif
 			}
 		 
 			if ((lnNorm5_ok == true) && (lnK_ok == true))
@@ -224,7 +234,11 @@ public:
 
 				vector<double> v = joinThreeVectors(lnNorm5,lnKconst,lnEconst);
 
+				#ifdef USE_ARPREC
 				J2 += lnSumK2(l+1,std::abs(m+dlta_m),lp,std::abs(mp),v,vv);
+				#else
+				J2 += lnSumK2(l+1,std::abs(m+dlta_m),lp,std::abs(mp),v);
+				#endif
 			}
 		}
 
@@ -532,7 +546,11 @@ public:
 	}
 
 
+	#ifdef USE_ARPREC
 	static double lnSumK2(int l, int m, int p, int q,vector<double> lnsum, vector<mp_real> vv)
+	#else
+	static double lnSumK2(int l, int m, int p, int q,vector<double> lnsum)
+	#endif
 	{
 		if ((l >= std::abs(m)) && (p >= std::abs(q)))
 		{
@@ -545,24 +563,29 @@ public:
 
 				vector<double> v;
 
+				sort(lnsum.begin(),lnsum.end(),magnitude());
+
+				#ifdef USE_ARPREC
 				mp_real sumArbPrec;
 				sumArbPrec = mp_real(0.0);
+				#else
+				double sum = 0.0;
+				#endif
 
 				for (int i=0; i<=outerMax; i++)
 				{
 
 					for (int j=0; j<=innerMax; j++)
 					{
+						
+
+						#ifdef USE_ARPREC
 						//This part must be done in arbitrary precision.
 						mp_real gammaArg;
 						gammaArg = vv[fixIndex(.5 * (l+p-m-q -2.*(i+j)+1.))] + vv[fixIndex(.5 * (m+q+2.*(i+j+1.)))] - vv[fixIndex(.5*(l+p+3.))];
 						gammaArg += vv[fixIndex(p+q+1)]-vv[fixIndex(q+j+1)]-vv[fixIndex(j+1)]-vv[fixIndex(p-q-2*j+1)];
 						gammaArg += vv[fixIndex(l+m+1)]-vv[fixIndex(m+i+1)]-vv[fixIndex(i+1)]-vv[fixIndex(l-m-2*i+1)];
 						gammaArg -= log(2.0) * (mp_real(m) + mp_real(q) + mp_real(2.0) * (mp_real(i) + mp_real(j)));
-
-						//cout << q+j+1  << " g" << endl;
-			
-						sort(lnsum.begin(),lnsum.end(),magnitude());
 
 						mp_real sumAll = mp_real(0.0);
 						for (int idx = 0; idx < lnsum.size(); idx++)
@@ -575,12 +598,35 @@ public:
 						out *= pow(-1,i+j);
 
 						sumArbPrec += out;
+						#else
+						double gammaArg = gsl_sf_lngamma(.5 * (l+p-m-q -2.*(i+j)+1.)) + gsl_sf_lngamma(.5 * (m+q+2.*(i+j+1.))) - gsl_sf_lngamma(.5*(l+p+3.));
+						gammaArg += gsl_sf_lngamma(p+q+1)-gsl_sf_lngamma(q+j+1)-gsl_sf_lngamma(j+1)-gsl_sf_lngamma(p-q-2*j+1);
+						gammaArg += gsl_sf_lngamma(l+m+1)-gsl_sf_lngamma(m+i+1)-gsl_sf_lngamma(i+1)-gsl_sf_lngamma(l-m-2*i+1);
+						gammaArg -= log(2.0) * (m + q + 2.0 * (i + j));
+
+						double sumAll = 0.0;
+						for (int idx = 0; idx < lnsum.size(); idx++)
+						{
+							sumAll += lnsum[idx];
+						}
+
+						double out;
+						out = std::exp(sumAll + gammaArg);
+						out *= std::pow(-1,i+j);
+
+						sum += out;
+						#endif
+
 					}
 
 				}
 
+				#ifdef USE_ARPREC 
 				outerSum = arbPrecToDouble(sumArbPrec);
-			
+				#else
+				outerSum = sum;
+				#endif
+
 				return outerSum;
 			
 			}
@@ -669,7 +715,7 @@ public:
     	{ return abs(x) < abs(y); }
 	};
 
-
+	#ifdef USE_ARPREC
     static double arbPrecToDouble(mp_real a)
     {
         //Convert a real arb. prec (mp_real) to double.
@@ -698,7 +744,7 @@ public:
 
         return s;
     }
-
+	#endif
 
 	static int fixIndex(double a)
 	{
@@ -709,6 +755,7 @@ public:
 	}
 
 
+	#ifdef USE_ARPREC
 	static vector<mp_real> genLogGamma(int lmax)
 	{
 		//Set up log-gamma vector.
@@ -726,6 +773,7 @@ public:
 		}
 		return v;
 	}
+	#endif
 
 };
 
