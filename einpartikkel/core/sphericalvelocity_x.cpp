@@ -1,7 +1,11 @@
 #include "sphericalbase.h"
 
+#ifdef USE_ARPREC
+#define numDigitsPrecision1 50
+#include <arprec/mp_real.h>
+#endif
 
-#include "sphericalvelocityBodyX.h"
+#include "sphericalvelocityBodyXY.h"
 
 /* First part of the linearly polarized laser in the velocity gauge
  * expressed in spherical harmonics
@@ -52,6 +56,7 @@ public:
 			return BasisPairList();
 	}
 
+
 	virtual void UpdatePotentialData(typename blitz::Array<cplx, Rank> data, typename Wavefunction<Rank>::Ptr psi, cplx timeStep, double curTime)
 	{
 		typedef CombinedRepresentation<Rank> CmbRepr;
@@ -73,6 +78,39 @@ public:
 		cplx IM(0,1.0);
 		blitz::TinyVector<int, Rank> index;
 		data = 0;
+
+		#ifdef USE_ARPREC
+		//Arbitrary precision library.
+		//Initialization should be set to desired precision plus two
+		mp::mp_init(numDigitsPrecision1 + 2); 
+		mp::mpsetprec(numDigitsPrecision1 ); 
+		mp::mpsetoutputprec(numDigitsPrecision1 ); 
+		cout.precision(numDigitsPrecision1 ) ; 
+		
+		//Find lmax
+		int lmax = 0;
+		for (int angIndex=0; angIndex<angCount; angIndex++)
+		{
+			int leftIndex = angBasisPairs(angIndex, 0);
+			int rightIndex = angBasisPairs(angIndex, 1);
+	
+			LmIndex left = angRepr->Range.GetLmIndex(leftIndex);
+			LmIndex right = angRepr->Range.GetLmIndex(rightIndex);
+
+			int l = left.l;
+			int lp = right.l;
+
+			int tmpMax = std::max(l,lp);
+			if (tmpMax > lmax )
+			{
+				lmax = tmpMax;
+			}
+		}
+
+		//Setup Log-Gamma 
+		vector<mp_real> v;
+		v = velocityHelperXY::genLogGamma(lmax+1);
+		#endif
 
 		for (int angIndex=0; angIndex<angCount; angIndex++)
 		{
@@ -96,8 +134,12 @@ public:
 			if (std::abs(m - mp) != 1) continue;
 			if (std::abs(l - lp) != 1) continue;
 
-			double coupling = velocityHelperX::sphericalvelocityBodyX(lp,mp,l,m);
-
+			#ifdef USE_ARPREC
+			double coupling = velocityHelperXY::sphericalvelocityBodyXY(lp,mp,l,m,v,true);
+			mp::mp_finalize();
+			#else
+			double coupling = velocityHelperXY::sphericalvelocityBodyXY(lp,mp,l,m,true);
+			#endif
 
 			for (int ri=0; ri<rCount; ri++)
 			{
@@ -220,7 +262,7 @@ public:
 			/*
 			 * Integral I1.
 			 */
-			coupling = velocityHelperX::I1integral(l,m,lp,mp);
+			coupling = velocityHelperXY::I1integralX(l,m,lp,mp);
 
 
 			for (int ri=0; ri<rCount; ri++)
