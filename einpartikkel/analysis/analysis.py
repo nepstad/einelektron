@@ -292,7 +292,7 @@ class EigenstateAnalysis:
 
 			#Update?
 			if index_iterator.lmax > lmaxStored:
-				print "The file " + filename + " is updated to support lmax" + index_iterator.lmax
+				print "The file " + gridFile + " is updated to support lmax " + str(index_iterator.lmax)
 				self.CreateAndSave_l_matrices(lmaxStored + 1, gridFile, theta, phi)	
 
 		else:
