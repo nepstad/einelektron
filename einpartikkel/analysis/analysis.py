@@ -1,9 +1,11 @@
 import pyprop
 import scipy
 from numpy import conj, dot, abs, diff, r_, zeros, double, complex, array, linspace, pi
-from numpy import maximum, sum, arctan2, imag, real, outer, sqrt, cos, sin, exp
+from numpy import maximum, sum, arctan2, imag, real, outer, sqrt, cos, sin, exp, shape
 import eigenstates
 import coulombwaves
+import os.path
+import tables
 from scipy.special import gamma, sph_harm
 from scipy.interpolate import UnivariateSpline
 
@@ -171,11 +173,99 @@ class EigenstateAnalysis:
 
 		return E, energyDistr
 
+
+
+	def CreateAndSave_l_matrices(self, lmin, filename, theta, phi):
+		"""
+		CreateAndSave_l_matrices(lmin, filename, theta, phi)
+		
+		Calculates the Legendre polynomials for all {l,m} and all angles.
+		The polynomials are stored in a h5-file. If the file exists, the
+		file is updated.
+
+		Parametres
+		----------
+		lmin : int, calculate Legendre polynomials for l >= lmin.
+		filename : string, grid file name.
+		theta : 1D double array, containing the theta grid.
+		phi : 1D double array, containing the phi grid.
+
+		"""
+		if lmin == 0:
+			mode = 'w'
+		else:
+			mode = 'r+'
+
+		f = tables.openFile(filename, mode)
+		root = f.root
+		index_iterator = self.Config.AngularRepresentation.index_iterator
+
+		print "Legendre ..."
+		prevl = -1;
+		for i, lm in enumerate(index_iterator.__iter__()):
+			print i
+			if lm.l >= lmin:
+				if lm.l != prevl:
+					midx = 0
+					leg = zeros([(2 * lm.l + 1), len(theta), len(phi)], dtype=complex)
+
+				for j, my_theta in enumerate(theta):
+					leg[midx,j,:] = sph_harm(lm.m, lm.l, phi, my_theta)
+				
+				midx += 1
+
+				if midx == 2 * lm.l + 1:
+					f.createArray('/','l_' + str(lm.l),leg)
+
+				prevl = lm.l
+		f.setNodeAttr("/","lmax",index_iterator.lmax)
+		f.close()
+
+	
+	def LoadAndCreateLegendreMatrix(self, filename, theta, phi):
+		"""
+		leg = LoadAndCreateLegendreMatrix(filename, theta, phi)
+		
+		Loads data from a file created by CreateAndSave_l_matrices(), and creates
+        a 3D double array, containing legendre polinomials evaluated for different l, m and thetas.
+
+		Parametres
+		----------
+		filename : string, grid file name.
+		theta : 1D double array, containing the theta grid.
+		phi : 1D double array, containing the phi grid.
+
+		Returns
+		-------
+		leg : 3D double array, containing legendre polinomials evaluated for different l, m and thetas.
+
+		"""
+
+		print "Load Legendre polys..."
+		index_iterator = self.Config.AngularRepresentation.index_iterator
+
+		leg = zeros([(index_iterator.lmax+1)**2, len(theta), len(phi)], dtype=complex)	
+
+		lmIdx = 0
+		f = tables.openFile(filename)
+		for l in range(0, index_iterator.lmax + 1):
+			a = eval('f.root.' + 'l_' + str(l))
+			shp = shape(a)
+			leg[lmIdx:lmIdx + shp[0],:,:] = a[:]
+
+			lmIdx += shp[0]
+
+		f.close()
+
+		return leg
+
+
 	def GetLegendrePoly(self, theta, phi):
 		"""
 		leg = GetLegendrePoly(lmIndices, theta)
 
 		Calculates the Legendre polinomials for all {l,m}, and the angles in theta.
+		The polynomials are stored in a grid spesific file. If the file already exists, the file is updated.
 
 		Parametres
 		----------
@@ -187,16 +277,65 @@ class EigenstateAnalysis:
 		-------
 		leg : 3D double array, containing legendre polinomials evaluated for different l, m and thetas.
 		"""
+
+		gridDir = 'legendre'
+		gridFile = gridDir + '/SphericalGrid_%.4f_%.4f_%i_%.4f_%.4f_%i.h5'%(theta[0],theta[-1],len(theta),phi[0],phi[-1],len(phi))
+
 		index_iterator = self.Config.AngularRepresentation.index_iterator
 
-		leg = zeros([(index_iterator.lmax+1)**2, len(theta), len(phi)], dtype=complex)
-		print "Legendre ..."
-		for i, lm in enumerate(index_iterator.__iter__()):
-			print i
-			for j, my_theta in enumerate(theta):
-				leg[i,j,:] = sph_harm(lm.m, lm.l, phi, my_theta)
+		#Check if the grid already exists, if not, create a file.
+		if os.path.exists(gridFile):
+
+			f = tables.openFile(gridFile)
+			lmaxStored = f.root._v_attrs.lmax
+			f.close()
+
+			#Update?
+			if index_iterator.lmax > lmaxStored:
+				print "The file " + gridFile + " is updated to support lmax " + str(index_iterator.lmax)
+				self.CreateAndSave_l_matrices(lmaxStored + 1, gridFile, theta, phi)	
+
+		else:
+			if not os.path.exists(gridDir):
+				os.mkdir(gridDir)
+
+			self.CreateAndSave_l_matrices(0, gridFile, theta, phi)
+
+
+		#Load the legendre polys from file
+		leg = self.LoadAndCreateLegendreMatrix(gridFile, theta, phi)
 
 		return leg
+
+
+#	def GetLegendrePoly(self, theta, phi):
+#		"""
+#		leg = GetLegendrePoly(lmIndices, theta)
+#
+#		Calculates the Legendre polinomials for all {l,m}, and the angles in theta.
+#
+#		Parametres
+#		----------
+#		lmIndices : list of lm-index objects in basis.
+#		theta : 1D double array, containing the theta grid.
+#		phi : 1D double array, containing the phi grid.
+#
+#		Returns
+#		-------
+#		leg : 3D double array, containing legendre polinomials evaluated for different l, m and thetas.
+#		"""
+#		index_iterator = self.Config.AngularRepresentation.index_iterator
+
+#		leg = zeros([(index_iterator.lmax+1)**2, len(theta), len(phi)], dtype=complex)
+#		print "Legendre ..."
+#		for i, lm in enumerate(index_iterator.__iter__()):
+#			print i
+#			for j, my_theta in enumerate(theta):
+#				leg[i,j,:] = sph_harm(lm.m, lm.l, phi, my_theta)
+#
+#		return leg
+
+
 
 
 	def CalculateAngularDistribution(self, psi, minE, maxE, dE, Z=1):
@@ -234,6 +373,7 @@ class EigenstateAnalysis:
 		
 		#Legendre polynomial values.
 		leg = self.GetLegendrePoly(theta, phi)
+
 		
 		#Initialising the angular distribution array.
 		angularDistrProj = zeros((thetaCount, len(E), phiCount), dtype=complex)
