@@ -73,6 +73,47 @@ class EigenstateAnalysis:
 		return boundE, boundV, boundDistr, boundTotal
 
 
+	def CalculateAllBoundProjections(self, psi):
+		"""
+		Calculate norm**2 of projection onto all bound states. Returns the 
+		projection on each state, specified by energy and {l,m}.
+		(In the case of hydrogen the energy is easily mappet to the n-quantum number.)
+
+
+		Parametres
+		----------
+		psi : PyProp wavefunction object. The wavefunction after propagation.
+
+		Returns
+		-------
+		boundDistr : list, the projections onto all boundstate.
+		lmIndices : list, the {l,m}'s of of each boundstate.
+		energy : list, the energy of each boundstate.
+
+		"""
+		boundDistr = []
+		lmIndices = []
+		energy = []
+		
+		#Multiply overlap on wavefunction
+		overlapPsi = self.MultiplyOverlap(psi)
+		
+		for angIdx, curE, curV, l, m in self.Eigenstate.IterateBoundStates(self.BoundThreshold):
+			#Get projection on eigenstates
+			psiSlice = overlapPsi.GetData()[angIdx, :]
+			proj = dot(conj(curV.transpose()), psiSlice)
+
+
+			#Stuff eigenvalues, projections and {l,m} into a list
+			for E,p in zip(curE, proj):
+				boundDistr.append(abs(p)**2)
+				lmIndices.append((l,m))
+				energy.append(E)
+
+
+		return boundDistr, lmIndices, energy
+
+
 	def RemoveProjectionOnBoundStates(self, psi):
 		"""Remove projection on bound states in-place
 
