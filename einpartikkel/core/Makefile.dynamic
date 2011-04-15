@@ -6,7 +6,7 @@ include $(PYPROP_ROOT)/Makefile.platform
 
 ARPREC_PATH := /home/sso059/libs/arprec-2.2.7
 # 1 if ARPREAC AVAILABLE
-USE_ARPREC := 1
+USE_ARPREC := 0
 
 
 PYPROP_LIB_PATH := $(PYPROP_ROOT)/pyprop/core
