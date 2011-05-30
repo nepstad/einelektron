@@ -45,3 +45,7 @@ PotentialEvaluator("ComplexAbsorbingPotential<2> 2","ComplexAbsorbingPotential_2
 #this is used to get at GetPotentialValue from python
 CustomPotential = Template("ComplexAbsorbingPotential", "potential.cpp")
 CustomPotential("2", "ComplexAbsorbingPotential_custom_2")
+
+#Diatomic Coulomb potential
+DiatomicPotential =  Template("DiatomicCoulombPotential", "diatomicpotential.cpp")
+DiatomicPotential("2")

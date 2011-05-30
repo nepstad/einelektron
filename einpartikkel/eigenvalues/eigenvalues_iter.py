@@ -20,7 +20,7 @@ shift = -0.5                        #shift used in shift-invert procedure
 
 import os
 import sys
-from numpy import where, array
+from numpy import where, array, sort, unique
 import tables
 import pypar
 import pyprop
@@ -74,10 +74,10 @@ def FindEigenvaluesInverseIterationsPiram(conf):
 
 
 @RegisterAll
-def SaveEigenvalueSolverShiftInvert(solver, shiftInvertSolver):
+def SaveEigenpairsSolverShiftInvert(solver, shiftInvertSolver):
 	"""
-	Saves the output of FindEigenvaluesNearShift, including error estimates 
-	to a hdf file.
+	Saves the output of FindEigenvaluesInverseIterationsPiram, 
+	including error estimates, to a hdf5 file.
 	"""
 	
 	logger = GetFunctionLogger()
@@ -87,14 +87,12 @@ def SaveEigenvalueSolverShiftInvert(solver, shiftInvertSolver):
 	angularRank = 0
 
 	#Get angular momentum and z-projection
-	#l = conf.AngularRepresentation.index_iterator.l
-	#m = conf.AngularRepresentation.index_iterator.m
 	psi = solver.BaseProblem.psi
 	angRange = \
 		psi.GetRepresentation().GetRepresentation(angularRank).Range
-	assert angRange.GetGrid().size == 1
-	l = angRange.GetLmIndex(0).l
-	m = angRange.GetLmIndex(0).m
+	angSize = angRange.Count()
+	l = sort(unique([angRange.GetLmIndex(i).l for i in range(angSize)]))
+	m = sort(unique([angRange.GetLmIndex(i).m for i in range(angSize)]))
 
 	#generate filename
 	filename = NameGeneratorBoundstates(conf, l, m)
@@ -209,9 +207,12 @@ def NameGeneratorBoundstates(conf, l, m):
 	
 	#Grid characteristics
 	radialPostfix = "_".join(GetRadialPostfix(conf))
+
+	l = str(l).replace(" ", "_")
+	m = str(m).replace(" ", "_")
 	
 	filename = "%s/" % folderName
-	filename += radialPostfix + "_l%i_m%i" % (l,m) + ".h5"
+	filename += radialPostfix + "_l%s_m%s" % (l,m) + ".h5"
 	
 	return os.path.normpath(filename)
 
