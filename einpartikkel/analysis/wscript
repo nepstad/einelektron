@@ -1,0 +1,28 @@
+from Configure import conftest
+from TaskGen import feature, extension, before, after
+import Options
+
+sources = [
+]
+
+pyste_module = "libanalysis"
+pyste_sources = [
+	"wrapper.pyste",
+]
+
+def set_options(opt):
+	pass
+
+def configure(conf):
+    pass
+
+def build(bld):
+	tskgen = bld.new_task_gen(
+		features="pyprop pyste compile link",
+		source=sources,
+		pyste_files=pyste_sources,
+		pyste_module=pyste_module,
+		pyste_force=False,
+		pyprop_path="../../pyprop",
+	)
+
