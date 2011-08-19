@@ -9,13 +9,14 @@ Core functionality for EinPartikkel calculations, such potentials.
 -Preconditioner setup for one-particle (3D) problems
 
 """
+__all__ = ["analysis", "namegenerator", "eigenstates", "coulombwaves"]
 
-#put boost::python-wrapped potentials into project namespace
-from ..utils import ProjectNamespace, RegisterProjectNamespace
-import above
-from above import *
-for key in above.__dict__.iterkeys():
-	if not key.startswith("__"):
-		RegisterProjectNamespace(eval(key))
+import sys
+import os
 
-__all__ = ["above", "preconditioner", "indexiterators"]
+import pyprop
+if pyprop.IsRunningFromSource:
+    sys.path.append(os.path.join(pyprop.BuildPath, "../modules", "einpartikkel", "core"))
+import libeinelektroncore
+
+from libeinelektroncore import *

@@ -11,8 +11,8 @@ Basic bound state operations are provided. These are:
 import numpy
 from numpy import zeros, complex, array, dot, conj
 import pyprop
-from einpartikkel.utils import RegisterAll
-from einpartikkel.eigenvalues.eigenvalues_iter import LoadEigenpairs
+from ..utils import RegisterAll
+from ..eigenvalues.eigenvalues_iter import LoadEigenpairs
 from ..eigenvalues.eigenvalues import SetupRadialEigenstates, SetupOverlapMatrix
 
 
@@ -53,7 +53,7 @@ class Boundstates(object):
 		#Setup overlap matrix
 		#self.Overlap = SetupOverlapMatrix(self.Config.OverlapPotential, \
 		#		self.Psi)
-		
+
 		self.IsSetup = True
 
 	def RemoveProjection(self, psi):

@@ -1,8 +1,12 @@
 from numpy import sin, cos, pi
 import sys
 sys.path.append("../..")
-import einpartikkel
 import pyprop
+from pyprop.modules import einpartikkel
+
+#Imports needed by config
+from pyprop.core.representation import CombinedRepresentation_2
+from pyprop.modules.discretization.bsplines import BS
 
 from einpartikkel.propagation.propagate import Propagate
 from einpartikkel.propagation.tasks import ComputeAtomicInitialState, ProgressReport, DisplayGMRESError, \
@@ -11,8 +15,8 @@ from einpartikkel import quantumnumbers
 
 import einpartikkel.core.indexiterators
 import einpartikkel.core.preconditioner
-from einpartikkel.utils import UpdatePypropProjectNamespace
-UpdatePypropProjectNamespace(pyprop.ProjectNamespace)
+
+from libeinpartikkelcore import *
 
 
 def RunPropagation():
@@ -23,7 +27,7 @@ def RunPropagation():
 	#Load config
 	configFile = "config.ini"
 	conf = pyprop.Load(configFile)
-	
+
 	#Setup propagation tasks. Initial state = ground state
 	qnum = quantumnumbers.HydrogenicQuantumNumbers(2,1,0)
 	tasks = [ComputeAtomicInitialState(qnum), ProgressReport(), DisplayGMRESError(), SaveWavefunction(False)]
@@ -36,13 +40,13 @@ def RunPropagation():
 	prop.run()
 
 	return prop
-	
+
 
 
 #Laser function velocity gauge
 def LaserFunctionSimpleVelocity(conf, t):
 	"""
-		Laser function velocity gauge. 
+		Laser function velocity gauge.
 	"""
 	if 0 <= t < conf.pulse_duration:
 		curField = conf.amplitude / conf.frequency;
@@ -63,10 +67,10 @@ def LaserFunctionSimpleLength(conf, t):
 		curField1 *= sin(2 * pi * t / conf.pulse_duration);
 		curField1 *= sin(conf.frequency * t + conf.phase);
 
-		curField2 = sin(pi * t / conf.pulse_duration); 
-		curField2 *= sin(pi * t / conf.pulse_duration); 
+		curField2 = sin(pi * t / conf.pulse_duration);
+		curField2 *= sin(pi * t / conf.pulse_duration);
 		curField2 *= cos(conf.frequency * t + conf.phase);
-		
+
 		curField = -conf.amplitude * (curField1 + curField2);
 
 	else:
@@ -96,12 +100,3 @@ def LaserFunctionSimpleLength_Y(conf, t):
 def LaserFunctionSimpleLength_Z(conf, t):
 	return LaserFunctionSimpleLength(conf, t)
 
-
-#Put laser function in pyprop project namespace so that config files are
-#loaded properly.
-pyprop.ProjectNamespace["LaserFunctionSimpleVelocity_X"] = LaserFunctionSimpleVelocity_X
-pyprop.ProjectNamespace["LaserFunctionSimpleVelocity_Y"] = LaserFunctionSimpleVelocity_Y
-pyprop.ProjectNamespace["LaserFunctionSimpleVelocity_Z"] = LaserFunctionSimpleVelocity_Z
-pyprop.ProjectNamespace["LaserFunctionSimpleLength_X"] = LaserFunctionSimpleLength_X
-pyprop.ProjectNamespace["LaserFunctionSimpleLength_Y"] = LaserFunctionSimpleLength_Y
-pyprop.ProjectNamespace["LaserFunctionSimpleLength_Z"] = LaserFunctionSimpleLength_Z

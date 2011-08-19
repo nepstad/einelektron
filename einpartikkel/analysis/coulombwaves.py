@@ -16,10 +16,10 @@ import tables
 from numpy import array, where, r_, sqrt, zeros, array, abs, dot, conj, pi, \
 	double, complex, iterable, diff
 import pyprop
-from einpartikkel.eigenvalues.eigenvalues import SetupRadialEigenstates
-from einpartikkel.utils import RegisterAll
-from einpartikkel.namegenerator import GetRadialPostfix, GetAngularPostfix
-from above import SetRadialCoulombWave
+from ..eigenvalues.eigenvalues import SetupRadialEigenstates
+from ..utils import RegisterAll
+from ..namegenerator import GetRadialPostfix, GetAngularPostfix
+from .analysis import SetRadialCoulombWave
 
 @RegisterAll
 class CoulombWaves(object):
@@ -27,7 +27,7 @@ class CoulombWaves(object):
 	"""
 	_DataItemAttrName = "DataItems"
 	_MetaDataItemAttrName = "MetaDataItems"
-	
+
 	def __init__(self, conf, Z, Emax, dE):
 		"""Return a Coulomb wave object
 		"""
@@ -56,7 +56,7 @@ class CoulombWaves(object):
 		self.Logger = pyprop.GetClassLogger(self)
 
 		self._SetupComplete = False
-	
+
 
 	def SetData(self, data):
 		self._Data = data
@@ -99,15 +99,15 @@ class CoulombWaves(object):
 				metaDataItemNames = f.getNodeAttr("/", cls._MetaDataItemAttrName)
 				for mdItem in metaDataItemNames:
 					metaDataItems[mdItem] = f.getNodeAttr("/", mdItem)
-				
+
 			#Load config object.
 			config = pyprop.LoadConfigFromFile(filename, "/")
-			
+
 
 		#Instantitate CoulombWave object and set data
 		obj = cls(config, **metaDataItems)
 		obj.SetData(d)
-		
+
 		logger.info("Loading complete.")
 
 		return obj
@@ -115,9 +115,9 @@ class CoulombWaves(object):
 
 	def Setup(self):
 		"""Calculate the Coulomb waves specified by config object
-		
+
 		"""
-		
+
 		#Check if we have already calculated coulomb waves
 		if self._SetupComplete:
 			return
@@ -129,7 +129,7 @@ class CoulombWaves(object):
 
 		#Create wavefunction
 		self.Psi = pyprop.CreateWavefunction(self.Config)
-		
+
 		#Calculate eigenstates
 		for l in d["AngularMomenta"]:
 			E, cw = SetupRadialCoulombStatesEnergyNormalized(self.Psi, self.Z, \
@@ -139,8 +139,8 @@ class CoulombWaves(object):
 			d["CoulombWaves_l%i" % l] = cw
 
 		self._SetupComplete = True
-    
-    
+
+
 	def Serialize(self):
 		"""Store Coulomb waves on disk
 
@@ -170,7 +170,7 @@ class CoulombWaves(object):
 			#Store metadata
 			for dataItemName, dataItemValue in self._MetaData.iteritems():
 				f.setNodeAttr("/", dataItemName, dataItemValue)
-			
+
 			#Store data item names
 			f.setNodeAttr("/", self._DataItemAttrName, self._Data.keys())
 			f.setNodeAttr("/", self._MetaDataItemAttrName, self._MetaData.keys())
@@ -184,7 +184,7 @@ class CoulombWaves(object):
 	def IterateStates(self, threshold):
 		"""
 		IterateStates(self, threshold)
-		
+
 		Iterate over all states with energies over threshold.
 
 		Parametres
@@ -201,11 +201,11 @@ class CoulombWaves(object):
 			#Get current l and m
 			l = lmIdx.l
 			m = lmIdx.m
-			
+
 			#Get energies and Coulomb waves
 			curE = self._Data["Energies_l%i" % l]
 			curCW = self._Data["CoulombWaves_l%i" % l]
-			
+
 			#Get energies and Coulomb waves
 			#curE = array(enList[l])
 			#curCW = array(cwList[l])
@@ -215,7 +215,7 @@ class CoulombWaves(object):
 			filteredE = curE[idx]
 			filteredCW = curCW[:,idx]
 			#filteredCW = curCW[idx,:]
-			
+
 			#Test:normalize
 			k = sqrt(2*filteredE)
 			dE = diff(filteredE)[0]
@@ -255,12 +255,12 @@ def CoulombWaveNameGenerator(conf, folderName, Z, dE, Emax):
 	angularPostfix = "_".join(getAngularPostfix(conf))
 	chargePostfix = "Z%s" % Z
 	energyPostfix = "dE%s_Emax%s" % (dE, Emax)
-	
-	filename = folderName + "/" 
+
+	filename = folderName + "/"
 	filename += "_".join([radialPostfix, angularPostfix, \
 		chargePostfix, energyPostfix])
 	filename += ".h5"
-	
+
 	return filename
 
 
@@ -283,7 +283,7 @@ def SetupRadialCoulombStatesEnergyNormalized(psi, Z, l, Emax, dE):
 	logger = pyprop.GetFunctionLogger()
 	E = r_[dE:Emax:dE]
 	k = sqrt(E*2)
-	
+
 	bspline = psi.GetRepresentation().GetRepresentation(1).GetBSplineObject()
 	#l = array(psi.GetRepresentation().GetGlobalGrid(0), dtype=int)
 

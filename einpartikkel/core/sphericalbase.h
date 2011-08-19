@@ -4,7 +4,7 @@
 #include <core/wavefunction.h>
 #include <core/potential/dynamicpotentialevaluator.h>
 #include <core/representation/combinedrepresentation.h>
-#include <core/representation/sphericalbasis/sphericalharmonicbasisrepresentation.h>
+#include <modules/discretizations/sphericalbasis/src/representation/sphericalharmonicbasisrepresentation.h>
 
 using namespace SphericalBasis;
 
