@@ -443,7 +443,7 @@ struct DiatomicCoulombPotential_2_Wrapper: DiatomicCoulombPotential<2>
 
 
 // Module ======================================================================
-void Export_wrapper()
+void Export_modules_einpartikkel_core_wrapper()
 {
     class_< CustomPotential_AngularKineticEnergy_Spherical<2>, CustomPotential_AngularKineticEnergy_Spherical_2_Wrapper >("CustomPotential_AngularKineticEnergy_Spherical_2", init<  >())
         .def(init< const CustomPotential_AngularKineticEnergy_Spherical<2>& >())

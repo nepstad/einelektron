@@ -1,18 +1,36 @@
 import os.path
 import os
+from pyprop_waf import add_options_lib
 
-subdirs = "analysis"
+subdirs = "analysis core"
 
 def set_options(opt):
-	print('---> Options from modules')
+	print('--> Options from EinPartikkel')
+	# arprec
+	gr = opt.parser.add_option_group("einpartikkel configuration options")
+	opt.einpartikkel_configuration_options = gr
+	add_options_lib(opt, "arprec", "-larprec")
+	gr.add_option("--enable-arprec", action="store_true",
+		dest="UseArprec", default=False,
+		help="Enable ARPREC high precision library")
+#	add_options_lib(opt, "arprec", "arprec", "/opt/arprec")
+
 	opt.sub_options(subdirs)
 
 def configure(conf):
-	print('---> Configuring modules')
+	print('--> Configuring EinPartikkel')
+	import Options
+	print('-> Configuring Einpartikkel')
+
+	conf.env.USE_ARPREC = False
+	if Options.options.UseArprec:
+		print "  - Detecting ARPREC"
+		conf.env.APREC_DEFINES += ["USE_ARPREC"]
+		set_options_lib(conf, "arprec")
 	conf.sub_config(subdirs)
 
 def build(bld):
 	bld.add_subdirs(subdirs)
 
 
-
+# vim: syntax=python
