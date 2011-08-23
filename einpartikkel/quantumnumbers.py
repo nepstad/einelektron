@@ -1,6 +1,7 @@
 import pyprop
 
 from utils import RegisterAll
+from pyprop.modules.discretizations.sphericalbasis import LmIndex
 
 @RegisterAll
 class HydrogenicQuantumNumbers(object):
@@ -25,4 +26,4 @@ class HydrogenicQuantumNumbers(object):
 		return self.n - self.l - 1
 
 	def GetLmIndex(self):
-		return pyprop.core.LmIndex(self.l, self.m)
+		return LmIndex(self.l, self.m)

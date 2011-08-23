@@ -4,6 +4,9 @@ import scipy
 import scipy.linalg
 
 import pyprop
+from pyprop.timer import Timers
+from pyprop.distribution import IsSingleProc
+import pyprop.tensorpotential
 
 from ..utils import RegisterAll
 
@@ -11,19 +14,19 @@ from ..utils import RegisterAll
 def SetupRadialEigenstates(prop, potentialIndices=[0], mList = [0]):
 	"""
 	Finds the eigenvalues and eigenvectors of the given potentials
-	of prop. 
+	of prop.
 
 	The eigenvalues are found by setting up a radial matrix for each (l,m)-value
 	and using the generalized eigenvalue solver in scipy to find all
-	eigenvalues and vectors. 
-	
-	eigenvalues is a list of 1-d eigenvalue arrays. 
-	
+	eigenvalues and vectors.
+
+	eigenvalues is a list of 1-d eigenvalue arrays.
+
 	"""
 
-	myTimers = pyprop.Timers()
+	myTimers = Timers()
 
-	if not pyprop.IsSingleProc():
+	if not IsSingleProc():
 		raise Exception("Works only on a single processor")
 
 	#Setup overlap matrix
@@ -106,8 +109,8 @@ def SetupRadialMatrix(prop, whichPotentials, angularIndex):
 	matrixSize = prop.psi.GetData().shape[1]
 	matrix = zeros((matrixSize, matrixSize), dtype=double)
 
-	for potNum in whichPotentials:	
-		if isinstance(potNum, pyprop.TensorPotential):
+	for potNum in whichPotentials:
+		if isinstance(potNum, pyprop.tensorpotential.tensorpotential.TensorPotential):
 			potential = potNum
 		else:
 			potential = prop.Propagator.BasePropagator.PotentialList[potNum]
@@ -123,7 +126,7 @@ def SetupRadialMatrix(prop, whichPotentials, angularIndex):
 
 		for i, (x,xp) in enumerate(basisPairs):
 			indexLeft = x
-			indexRight = xp 
+			indexRight = xp
 			matrix[indexLeft, indexRight] += \
 				potential.PotentialData[idx,i].real
 

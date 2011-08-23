@@ -1,22 +1,25 @@
-from numpy import sin, cos, pi
+from numpy import sin, cos, pi, exp
 import sys
-sys.path.append("../..")
+sys.path.append("../../pyprop")
 import pyprop
-from pyprop.modules import einpartikkel
 
 #Imports needed by config
-from pyprop.core.representation import CombinedRepresentation_2
-from pyprop.modules.discretization.bsplines import BS
+from pyprop.core import CombinedRepresentation_2
+import pyprop.modules.discretizations.bspline as bspline
+import pyprop.modules.discretizations.sphericalbasis as sph
+import pyprop.modules.discretizations.sphericalbasis.basis
+import pyprop.modules.solvers.krylov.cayley as cayley
+from pyprop.propagator import basispropagator
 
-from einpartikkel.propagation.propagate import Propagate
-from einpartikkel.propagation.tasks import ComputeAtomicInitialState, ProgressReport, DisplayGMRESError, \
-		SaveWavefunction
-from einpartikkel import quantumnumbers
+from modules.einpartikkel.propagation.propagate import Propagate
+from modules.einpartikkel.propagation.tasks import ComputeAtomicInitialState, \
+		ProgressReport, DisplayGMRESError, SaveWavefunction
+from modules.einpartikkel import quantumnumbers
 
-import einpartikkel.core.indexiterators
-import einpartikkel.core.preconditioner
+from modules.einpartikkel.core.indexiterators import DefaultLmIndexIterator
+import modules.einpartikkel.core.preconditioner as preconditioner
 
-from libeinpartikkelcore import *
+from modules.einpartikkel.core.libeinelektroncore import *
 
 
 def RunPropagation():
@@ -26,7 +29,7 @@ def RunPropagation():
 
 	#Load config
 	configFile = "config.ini"
-	conf = pyprop.Load(configFile)
+	conf = pyprop.config.Load(configFile)
 
 	#Setup propagation tasks. Initial state = ground state
 	qnum = quantumnumbers.HydrogenicQuantumNumbers(2,1,0)
@@ -40,7 +43,6 @@ def RunPropagation():
 	prop.run()
 
 	return prop
-
 
 
 #Laser function velocity gauge

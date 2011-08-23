@@ -1,4 +1,6 @@
 import pyprop
+from pyprop.debug import PrintMemoryUsage
+import pyprop.modules.solvers.trilinos as trilinos
 from ..utils import RegisterAll, RegisterProjectNamespace
 
 @RegisterAll
@@ -11,9 +13,9 @@ class RadialPreconditioner:
 	where H is the Hamiltonian, S is the overlap matrix
 	and a and b are complex scaling factors (scalingH and scalingS).
 
-	The preconditioner is given a set of tensor potentials which are 
-	diagonal in the angular rank (also called radial potentials). 
-	These potentials should approximate the Hamiltonian as well as 
+	The preconditioner is given a set of tensor potentials which are
+	diagonal in the angular rank (also called radial potentials).
+	These potentials should approximate the Hamiltonian as well as
 	possible, as the system (1) is solved exactly for the given radial
 	potentials
 	"""
@@ -49,33 +51,33 @@ class RadialPreconditioner:
 		"""
 
 		#Setup overlap potential
-		pyprop.PrintMemoryUsage("Before Preconditioner Generate Potential (Overlap)")
+		PrintMemoryUsage("Before Preconditioner Generate Potential (Overlap)")
 		tensorPotential = prop.BasePropagator.GeneratePotential(self.OverlapSection)
 		tensorPotential.PotentialData *= self.GetOverlapScaling()
 
 		#Add all potentials to solver
 		scalingH = self.GetHamiltonianScaling()
 		for conf in self.PotentialSections:
-			pyprop.PrintMemoryUsage("Before Preconditioner Generate Potential (%s)" % conf)
+			PrintMemoryUsage("Before Preconditioner Generate Potential (%s)" % conf)
 			#Setup potential in basis
 			potential = prop.BasePropagator.GeneratePotential(conf)
 			if not tensorPotential.CanConsolidate(potential):
 				raise Exception("Cannot consolidate potential %s with overlap-potential" % (potential.Name))
-		
+
 			#Add potential
 			potential.PotentialData *= scalingH
 			tensorPotential.PotentialData += potential.PotentialData
 			del potential
-		pyprop.PrintMemoryUsage("After Preconditioner Generate Potentials")
+		PrintMemoryUsage("After Preconditioner Generate Potentials")
 
-	
+
 		#Setup solvers
 		tensorPotential.SetupStep(0.0)
 		self.SetupRadialSolvers(tensorPotential)
 
 	def SetupRadialSolvers(self, tensorPotential):
 		raise NotImplementedException("Please Override")
-		
+
 	def Solve(self, psi):
 		raise NotImplementedException("Please Override")
 
@@ -83,7 +85,7 @@ class RadialPreconditioner:
 @RegisterProjectNamespace
 class RadialPreconditionerIfpack(RadialPreconditioner):
 	"""
-	RadialPreconditioner using Ifpack (ILU) to 
+	RadialPreconditioner using Ifpack (ILU) to
 	approximately factorize the radial blocks
 	"""
 
@@ -95,7 +97,7 @@ class RadialPreconditionerIfpack(RadialPreconditioner):
 		self.Cutoff = conf.cutoff
 
 	def SetupRadialSolvers(self, tensorPotential):
-		pyprop.PrintMemoryUsage("Before Ifpack Setup")
+		PrintMemoryUsage("Before Ifpack Setup")
 
 		#Setup the ILU preconditioner for each radial rank
 		radialSolvers = []
@@ -105,23 +107,23 @@ class RadialPreconditionerIfpack(RadialPreconditioner):
 			vector = self.psi.GetData()[i,:]
 			matrix = tensorPotential.PotentialData[i, :]
 
-			solver = pyprop.CreateInstanceRank("core.IfpackRadialPreconditioner", 1)
+			solver = pyprop.createinstance.CreateInstanceRank("trilinos.IfpackRadialPreconditioner", 1)
 			basisPairs = tensorPotential.BasisPairs[1:]
 			solver.Setup(vector, matrix, basisPairs, self.Cutoff)
 			radialSolvers.append(solver)
 
 		self.RadialSolvers = radialSolvers
-		pyprop.PrintMemoryUsage("After Ifpack Setup")
+		PrintMemoryUsage("After Ifpack Setup")
 
 	def Solve(self, psi):
 		data = psi.GetData()
-		
+
 		angularCount = data.shape[0]
 		if angularCount != len(self.RadialSolvers):
 			raise Exception("Invalid Angular Count")
 
 		for angularIndex, solve in enumerate(self.RadialSolvers):
 			solve.Solve(data[angularIndex, :])
-		
+
 
 

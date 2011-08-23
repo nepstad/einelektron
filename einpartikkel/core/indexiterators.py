@@ -5,9 +5,9 @@ def LmIndexIter(self):
 	yield self.l
 	yield self.m
 
-from pyprop.core import LmIndex
+from pyprop.modules.discretizations.sphericalbasis import LmIndex
 LmIndex.__str__ = lambda self: "l=%i, m=%i" % (self.l, self.m)
-LmIndex.__repr__ = lambda self: "sys.modules['pyprop'].LmIndex(%i, %i)" % (self.l, self.m)	
+LmIndex.__repr__ = lambda self: "LmIndex(%i, %i)" % (self.l, self.m)
 LmIndex.__iter__ = LmIndex
 
 from ..utils import RegisterAll, RegisterProjectNamespace
@@ -37,9 +37,9 @@ class DefaultLmIndexIterator:
 		for curl in range(self.lmax + 1):
 			for curm in range(-curl, curl + 1):
 				yield LmIndex(curl,curm)
-		
+
 	def __repr__(self):
-		return "sys.modules['pyprop'].ProjectNamespace['%s'](%s)" % \
+		return "%s(%s)" % \
 			(self.__class__.__name__, self.lmax)
 
 
@@ -51,7 +51,7 @@ class FixedMLmIndexIterator:
 	of m values to the SphericalHarmonicBasisRepresentation.
 
 	lmax gives the maximum l value of l.
-	
+
 	m should be a list of values, with the constraint |m| <= l
 
 	This generator is most likely used in a configuration file like
@@ -73,7 +73,7 @@ class FixedMLmIndexIterator:
 		for curm in self.m:
 			for curl in range(abs(curm), self.lmax + 1):
 				yield LmIndex(curl,curm)
-		
+
 	def __repr__(self):
-		return "sys.modules['pyprop'].ProjectNamespace['%s'](%s, %s)" % \
+		return "%s(%s, %s)" % \
 			(self.__class__.__name__, self.lmax, self.m)

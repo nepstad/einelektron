@@ -5,7 +5,7 @@ PropagationTasks
 Defines standard tasks to be performed during propagation.
 
 A list of instantiated propagation tasks should be supplied to the Propagate
-class. 
+class.
 
 Custom propagation tasks should derive from the PropagationTask baseclass,
 defined here.
@@ -18,7 +18,7 @@ import time
 import tables
 import pypar
 import pyprop
-from pyprop import PrintOut
+from pyprop.debug import PrintOut
 from pyprop.pyproplogging import GetClassLogger, GetFunctionLogger
 from ..utils import RegisterAll
 from ..eigenvalues import eigenvalues
@@ -26,7 +26,7 @@ from ..eigenvalues import eigenvalues
 
 def CreatePath(absFileName):
 	"""Create directories in abspath
-	
+
 	"""
 	logger = GetFunctionLogger()
 	if pyprop.ProcId == 0:
@@ -35,12 +35,12 @@ def CreatePath(absFileName):
 			logger.debug("Creating folder: %s" % filePath)
 			os.makedirs(filePath)
 	pypar.barrier()
-	
+
 
 class PropagationTask:
 	def __init__(self):
 		raise NotImplementedError("Please implement in derived class")
-	
+
 	def setupTask(self, prop):
 		raise NotImplementedError("Please implement in derived class")
 
@@ -70,12 +70,12 @@ class ProgressReport(PropagationTask):
 		self.Logger.info("Setting up task...")
 		self.StartTime = time.time()
 		self.InitialPsi = prop.psi.Copy()
-	
+
 		#check if output dir exist, create if not
 		if self.StoreProgressInfo:
 			self.OutputFileName = prop.Config.Names.output_file_name
 			CreatePath(self.OutputFileName)
-		
+
 		#Report items
 		self.ProgressItems["SampleTimes"] = []
 		self.ProgressItems["Norm"] = []
@@ -126,7 +126,7 @@ class ProgressReport(PropagationTask):
 			timeStr = "%ih %im" % (hours, minutes)
 		else:
 			timeStr = "%im %is" % (minutes, seconds)
-			
+
 		return timeStr
 
 
@@ -136,13 +136,13 @@ class DisplayGMRESError(PropagationTask):
 	"""
 	def __init__(self):
 		pass
-	
+
 	def setupTask(self, prop):
 		pass
-	
+
 	def callback(self, prop):
 		PrintOut(prop.Propagator.Solver.GetErrorEstimateList())
-		
+
 	def postProcess(self, prop):
 		pass
 
@@ -171,7 +171,7 @@ class SaveWavefunction(PropagationTask):
 		if self.StoreDuringPropagation:
 			#create unique filename
 			filename = "%s_%03i.h5" % (self.OutputFileName.strip(".h5"), self.Counter)
-			
+
 			#store current wavefunction and propagation time
 			prop.SaveWavefunctionHDF(filename, "/wavefunction")
 			if pyprop.ProcId == 0:
