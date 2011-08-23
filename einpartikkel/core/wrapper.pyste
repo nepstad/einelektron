@@ -41,6 +41,7 @@ PotentialEvaluator("CoulombPotential<2> 2","CoulombPotential_2")
 PotentialEvaluator("SingleActiveElectronPotential<2> 2","SingleActiveElectronPotential_2")
 PotentialEvaluator("OverlapPotential<2> 2","OverlapPotential_2")
 PotentialEvaluator("ComplexAbsorbingPotential<2> 2","ComplexAbsorbingPotential_2")
+PotentialEvaluator("ManolopoulosAbsorber<2> 2","ManolopoulosAbsorber_2")
 
 #this is used to get at GetPotentialValue from python
 CustomPotential = Template("ComplexAbsorbingPotential", "potential.cpp")

@@ -605,6 +605,17 @@ void Export_wrapper()
         .def("CalculateExpectationValue", &DynamicPotentialEvaluator<ComplexAbsorbingPotential<2>,2>::CalculateExpectationValue)
     ;
 
+    class_< DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2> >("ManolopoulosAbsorber_2", init<  >())
+        .def(init< const DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>& >())
+        .def("ApplyConfigSection", &DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>::ApplyConfigSection)
+        .def("ApplyPotential", &DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>::ApplyPotential)
+        .def("MultiplyPotential", &DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>::MultiplyPotential)
+        .def("UpdateStaticPotential", &DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>::UpdateStaticPotential)
+        .def("GetPotential", &DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>::GetPotential)
+        .def("UpdatePotentialData", &DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>::UpdatePotentialData)
+        .def("CalculateExpectationValue", &DynamicPotentialEvaluator<ManolopoulosAbsorber<2>,2>::CalculateExpectationValue)
+    ;
+
     class_< ComplexAbsorbingPotential<2> >("ComplexAbsorbingPotential_custom_2", init<  >())
         .def(init< const ComplexAbsorbingPotential<2>& >())
         .def_readwrite("TimeStep", &ComplexAbsorbingPotential<2>::TimeStep)

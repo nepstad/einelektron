@@ -4,13 +4,15 @@
 #ifdef USE_ARPREC
 #define numDigitsPrecision1 50
 #include <arprec/mp_real.h>
+#else
+#include <vector>
 #endif
 
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_coupling.h>
 #include "sphericalbase.h"
 
-
+using namespace std;
 
 class velocityHelperXY
 {
